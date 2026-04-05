@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MITB Intelligence — WWE Money in the Bank Analytics 2005–2026</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ── TOKENS ───────────────────────────────────────────────── */
+:root {
+  --bg:        #09090E;
+  --surface:   #0F0F18;
+  --surface2:  #141420;
+  --border:    #1E1E2E;
+  --border-hi: #2E2E46;
+  --gold:      #D4A843;
+  --gold-pale: #F0CC72;
+  --gold-dim:  #7A5E1E;
+  --gold-bg:   rgba(212,168,67,.06);
+  --pink:      #C4607A;
+  --blue:      #4A7CB5;
+  --green:     #3E9E72;
+  --red:       #B84A4A;
+  --text:      #E4E0D8;
+  --text-2:    #9490A0;
+  --text-3:    #5A566A;
+  --radius:    6px;
+  --radius-lg: 12px;
+}
+
+/* ── RESET ────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── LAYOUT ───────────────────────────────────────────────── */
+.page { max-width: 1280px; margin: 0 auto; padding: 0 32px 80px; }
+
+/* ── HEADER ───────────────────────────────────────────────── */
+.site-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  padding: 52px 0 36px;
+  border-bottom: 1px solid var(--border);
+  gap: 32px;
+}
+@media(max-width:700px){ .site-header { grid-template-columns:1fr; } }
+
+.header-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.header-eyebrow::before {
+  content: '';
+  display: inline-block;
+  width: 20px;
+  height: 1px;
+  background: var(--gold);
+}
+
+.header-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(36px, 5vw, 60px);
+  line-height: 1.0;
+  color: var(--text);
+  letter-spacing: -.02em;
+}
+.header-title em {
+  font-style: italic;
+  color: var(--gold-pale);
+}
+
+.header-desc {
+  color: var(--text-2);
+  font-weight: 300;
+  margin-top: 10px;
+  font-size: 14px;
+  max-width: 480px;
+}
+
+.header-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.meta-pill {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border: 1px solid var(--border-hi);
+  border-radius: 20px;
+  color: var(--text-2);
+}
+
+.header-kpis { display: flex; gap: 28px; }
+.hkpi { text-align: right; }
+.hkpi-val {
+  font-family: 'DM Serif Display', serif;
+  font-size: 34px;
+  color: var(--gold-pale);
+  line-height: 1;
+}
+.hkpi-lbl {
+  font-size: 10px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-top: 3px;
+  font-family: 'DM Mono', monospace;
+}
+
+/* ── NAV ──────────────────────────────────────────────────── */
+.nav-bar {
+  display: flex;
+  gap: 0;
+  padding: 28px 0 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 44px;
+}
+
+.nav-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-3);
+  padding: 10px 20px;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color .2s, border-color .2s;
+  letter-spacing: .01em;
+}
+.nav-btn:hover { color: var(--text); }
+.nav-btn.active { color: var(--text); border-bottom-color: var(--gold); }
+
+/* ── PANELS ───────────────────────────────────────────────── */
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ── SECTION LABEL ────────────────────────────────────────── */
+.section-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ── STAT GRID ────────────────────────────────────────────── */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 40px;
+}
+@media(max-width:900px){ .stat-grid { grid-template-columns: repeat(3,1fr); } }
+@media(max-width:500px){ .stat-grid { grid-template-columns: repeat(2,1fr); } }
+
+.stat-card {
+  background: var(--surface);
+  padding: 24px 20px;
+  position: relative;
+}
+.stat-card:first-child {
+  border-top: 2px solid var(--gold);
+}
+.stat-n {
+  font-family: 'DM Serif Display', serif;
+  font-size: 38px;
+  line-height: 1;
+  color: var(--gold-pale);
+}
+.stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-2);
+  margin-top: 6px;
+  letter-spacing: .02em;
+}
+.stat-sub {
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 5px;
+  font-weight: 300;
+  line-height: 1.4;
+}
+
+/* ── CHART ROW ────────────────────────────────────────────── */
+.chart-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 40px;
+}
+@media(max-width:768px){ .chart-row { grid-template-columns: 1fr; } }
+
+/* ── CARD ─────────────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+}
+.card-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 18px;
+  margin-bottom: 22px;
+  color: var(--text);
+}
+
+/* ── DONUT ────────────────────────────────────────────────── */
+.donut-layout { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
+
+.legend-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.legend-swatch { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.legend-name { font-size: 12px; color: var(--text-2); flex: 1; }
+.legend-pct { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; }
+
+/* ── BARS ─────────────────────────────────────────────────── */
+.bar-row { margin-bottom: 14px; }
+.bar-header { display: flex; justify-content: space-between; margin-bottom: 5px; }
+.bar-name { font-size: 13px; color: var(--text-2); }
+.bar-val { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--gold); }
+.track { height: 4px; background: var(--border-hi); border-radius: 2px; overflow: hidden; }
+.fill { height: 100%; border-radius: 2px; transition: width 1.4s cubic-bezier(.16,1,.3,1); }
+.fill-gold  { background: var(--gold); }
+.fill-pink  { background: var(--pink); }
+.fill-blue  { background: var(--blue); }
+.fill-green { background: var(--green); }
+.fill-red   { background: var(--red); }
+.fill-muted { background: var(--text-3); }
+
+/* ── GENDER SPLIT ─────────────────────────────────────────── */
+.split-bar { display: flex; height: 6px; border-radius: 3px; overflow: hidden; margin: 12px 0 16px; }
+.split-men   { background: var(--blue); }
+.split-women { background: var(--pink); }
+
+.split-labels { display: flex; justify-content: space-between; margin-bottom: 20px; }
+.split-n { font-family: 'DM Serif Display', serif; font-size: 28px; }
+.split-tag {
+  font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--text-3); font-family: 'DM Mono', monospace;
+  display: block; margin-top: 1px;
+}
+
+/* ── HIGHLIGHTS ───────────────────────────────────────────── */
+.highlights-grid {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 16px;
+  margin-bottom: 40px;
+}
+@media(max-width:900px){ .highlights-grid { grid-template-columns: 1fr 1fr; } }
+@media(max-width:600px){ .highlights-grid { grid-template-columns: 1fr; } }
+
+.hl-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  transition: border-color .2s, transform .2s;
+}
+.hl-card:hover { border-color: var(--border-hi); transform: translateY(-2px); }
+.hl-icon { font-size: 20px; margin-bottom: 12px; display: block; }
+.hl-label {
+  font-family: 'DM Mono', monospace; font-size: 9px;
+  letter-spacing: .16em; text-transform: uppercase;
+  color: var(--text-3); margin-bottom: 4px;
+}
+.hl-name { font-family: 'DM Serif Display', serif; font-size: 17px; color: var(--gold-pale); margin-bottom: 8px; }
+.hl-desc { font-size: 12px; color: var(--text-2); line-height: 1.55; font-weight: 300; }
+
+/* ── TABLE ────────────────────────────────────────────────── */
+.table-wrapper { overflow-x: auto; }
+
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table thead tr { border-bottom: 1px solid var(--border-hi); }
+.data-table th {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--text-3); padding: 0 16px 12px; text-align: left;
+  font-weight: 400; white-space: nowrap;
+}
+.data-table th:first-child { padding-left: 0; }
+.data-table td {
+  padding: 13px 16px; border-bottom: 1px solid var(--border);
+  vertical-align: middle; font-size: 13px;
+}
+.data-table td:first-child { padding-left: 0; }
+.data-table tbody tr { transition: background .12s; }
+.data-table tbody tr:hover { background: var(--surface2); }
+.data-table tbody tr:last-child td { border-bottom: none; }
+
+.cell-year { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text-3); }
+.cell-name { font-weight: 600; color: var(--text); font-size: 14px; }
+.cell-sub  { font-size: 11px; color: var(--text-3); margin-top: 1px; font-weight: 300; }
+.cell-brand { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .08em; color: var(--text-3); }
+
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 600; letter-spacing: .02em; white-space: nowrap;
+}
+.badge-win   { background: rgba(62,158,114,.12); color: var(--green); }
+.badge-loss  { background: rgba(184,74,74,.12);  color: var(--red); }
+.badge-event { background: rgba(212,168,67,.08); color: var(--gold); }
+
+.stolen-tag {
+  font-size: 9px; font-family: 'DM Mono', monospace;
+  letter-spacing: .08em; text-transform: uppercase;
+  background: rgba(196,96,122,.1); color: var(--pink);
+  padding: 2px 6px; border-radius: 3px; margin-left: 6px;
+}
+
+.days-val { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text-2); }
+
+/* ── SEARCH ───────────────────────────────────────────────── */
+.search-row { margin-bottom: 20px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.search-input {
+  background: var(--surface); border: 1px solid var(--border-hi);
+  border-radius: var(--radius); padding: 9px 14px;
+  color: var(--text); font-family: 'DM Sans', sans-serif;
+  font-size: 13px; outline: none; width: 240px; transition: border-color .2s;
+}
+.search-input::placeholder { color: var(--text-3); }
+.search-input:focus { border-color: var(--gold-dim); }
+
+.filter-btn {
+  background: none; border: 1px solid var(--border-hi); border-radius: var(--radius);
+  padding: 9px 14px; color: var(--text-3); font-size: 12px; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; transition: all .15s;
+}
+.filter-btn:hover { color: var(--text); }
+.filter-btn.active { background: var(--gold-bg); color: var(--gold); border-color: var(--gold-dim); }
+
+/* ── TIMELINE ─────────────────────────────────────────────── */
+.tl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 40px; }
+@media(max-width:768px){ .tl-grid { grid-template-columns: 1fr; } }
+
+.tl-list { position: relative; }
+.tl-list::before {
+  content: ''; position: absolute;
+  left: 52px; top: 0; bottom: 0;
+  width: 1px; background: var(--border);
+}
+
+.tl-item { display: grid; grid-template-columns: 44px 20px 1fr; gap: 0 10px; }
+
+.tl-year-col {
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  color: var(--text-3); text-align: right; padding-top: 14px; line-height: 1;
+}
+.tl-spine { display: flex; flex-direction: column; align-items: center; padding-top: 17px; }
+.tl-dot {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--gold);
+  flex-shrink: 0; box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--gold-dim);
+}
+.tl-dot.win    { background: var(--green); box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px rgba(62,158,114,.4); }
+.tl-dot.women  { background: var(--pink);  box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px rgba(196,96,122,.4); }
+.tl-dot.fail   { background: var(--red);   box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px rgba(184,74,74,.4); }
+.tl-dot.event  { background: var(--gold);  box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--gold-dim); }
+
+.tl-body { padding: 10px 0 14px; border-bottom: 1px solid var(--border); }
+.tl-item:last-child .tl-body { border-bottom: none; }
+.tl-name  { font-weight: 600; font-size: 13px; color: var(--text); line-height: 1.2; }
+.tl-detail { font-size: 11px; color: var(--text-3); margin-top: 3px; line-height: 1.4; font-weight: 300; }
+
+/* ── RECORDS ──────────────────────────────────────────────── */
+.records-grid {
+  display: grid; grid-template-columns: repeat(4,1fr);
+  gap: 1px; background: var(--border);
+  border: 1px solid var(--border); border-radius: var(--radius-lg);
+  overflow: hidden; margin-bottom: 40px;
+}
+@media(max-width:900px){ .records-grid { grid-template-columns: 1fr 1fr; } }
+
+.record-cell { background: var(--surface); padding: 22px; }
+.record-n { font-family: 'DM Serif Display', serif; font-size: 26px; color: var(--gold-pale); line-height: 1.1; }
+.record-title { font-size: 11px; font-weight: 600; color: var(--text-2); margin-top: 5px; }
+.record-sub   { font-size: 11px; color: var(--text-3); margin-top: 4px; font-weight: 300; }
+
+/* ── THREE COL ────────────────────────────────────────────── */
+.three-col { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; margin-bottom: 40px; }
+@media(max-width:900px){ .three-col { grid-template-columns: 1fr 1fr; } }
+@media(max-width:600px){ .three-col { grid-template-columns: 1fr; } }
+
+/* ── TIMING ───────────────────────────────────────────────── */
+.timing-grid { display: flex; flex-direction: column; gap: 14px; }
+.timing-row  { display: flex; align-items: center; gap: 12px; }
+.timing-label { font-size: 12px; color: var(--text-2); width: 130px; flex-shrink: 0; }
+.timing-track { flex: 1; height: 4px; background: var(--border-hi); border-radius: 2px; overflow: hidden; }
+.timing-count { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-3); width: 56px; text-align: right; flex-shrink: 0; }
+
+/* ── FOOTER ───────────────────────────────────────────────── */
+.site-footer {
+  border-top: 1px solid var(--border);
+  padding: 28px 0 0;
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+}
+.footer-note { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .08em; color: var(--text-3); }
+
+/* ── FADE IN ──────────────────────────────────────────────── */
+.fade-in { opacity: 0; transform: translateY(10px); transition: opacity .5s ease, transform .5s ease; }
+.fade-in.visible { opacity: 1; transform: none; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div>
+      <div class="header-eyebrow">WWE Analytics · Money in the Bank</div>
+      <h1 class="header-title">Briefcase<br><em>Intelligence</em></h1>
+      <p class="header-desc">A comprehensive statistical record of every Money in the Bank winner, cash-in result, and historical milestone — 2005 to 2026.</p>
+    </div>
+    <div class="header-meta">
+      <span class="meta-pill">Updated April 2026</span>
+      <div class="header-kpis">
+        <div class="hkpi"><div class="hkpi-val">40</div><div class="hkpi-lbl">Winners</div></div>
+        <div class="hkpi"><div class="hkpi-val">84%</div><div class="hkpi-lbl">Success</div></div>
+        <div class="hkpi"><div class="hkpi-val">21</div><div class="hkpi-lbl">Years</div></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- NAV -->
+  <nav class="nav-bar">
+    <button class="nav-btn active" onclick="showPanel('overview',this)">Overview</button>
+    <button class="nav-btn" onclick="showPanel('winners',this)">All Winners</button>
+    <button class="nav-btn" onclick="showPanel('timeline',this)">Timeline</button>
+    <button class="nav-btn" onclick="showPanel('records',this)">Records</button>
+  </nav>
+
+  <!-- ═══════════ OVERVIEW ═══════════ -->
+  <section id="panel-overview" class="panel active">
+
+    <div class="section-label">Key Metrics</div>
+    <div class="stat-grid fade-in">
+      <div class="stat-card">
+        <div class="stat-n">33</div>
+        <div class="stat-label">Successful Cash-Ins</div>
+        <div class="stat-sub">Out of 40 total holders</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-n">5</div>
+        <div class="stat-label">Failed Cash-Ins</div>
+        <div class="stat-sub">Corbin · Cena · Sandow · Theory · McIntyre</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-n">2</div>
+        <div class="stat-label">Briefcases Stolen</div>
+        <div class="stat-sub">Kennedy → Edge · Otis → The Miz</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-n">273</div>
+        <div class="stat-label">Longest Hold (days)</div>
+        <div class="stat-sub">Seth Rollins, 2014 — WrestleMania 31</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-n">100%</div>
+        <div class="stat-label">Women's Success Rate</div>
+        <div class="stat-sub">All 9 women's holders became champion</div>
+      </div>
+    </div>
+
+    <div class="section-label">Distributions</div>
+    <div class="chart-row fade-in">
+      <div class="card">
+        <div class="card-title">Cash-In Outcomes</div>
+        <div class="donut-layout">
+          <svg width="140" height="140" viewBox="0 0 140 140" style="flex-shrink:0;">
+            <circle cx="70" cy="70" r="52" fill="none" stroke="#1E1E2E" stroke-width="16"/>
+            <circle cx="70" cy="70" r="52" fill="none" stroke="#3E9E72" stroke-width="16"
+              stroke-dasharray="274.9 326.7" stroke-dashoffset="0" transform="rotate(-90 70 70)"/>
+            <circle cx="70" cy="70" r="52" fill="none" stroke="#B84A4A" stroke-width="16"
+              stroke-dasharray="40.8 326.7" stroke-dashoffset="-274.9" transform="rotate(-90 70 70)"/>
+            <circle cx="70" cy="70" r="52" fill="none" stroke="#D4A843" stroke-width="16"
+              stroke-dasharray="16.3 326.7" stroke-dashoffset="-315.7" transform="rotate(-90 70 70)"/>
+            <text x="70" y="64" text-anchor="middle" fill="#F0CC72" font-family="DM Serif Display" font-size="22">84%</text>
+            <text x="70" y="80" text-anchor="middle" fill="#5A566A" font-family="DM Mono" font-size="8" letter-spacing="2">SUCCESS</text>
+          </svg>
+          <div style="flex:1;">
+            <div class="legend-row">
+              <div class="legend-swatch" style="background:var(--green)"></div>
+              <span class="legend-name">Successful cash-in</span>
+              <span class="legend-pct" style="color:var(--green)">84%</span>
+            </div>
+            <div class="legend-row">
+              <div class="legend-swatch" style="background:var(--red)"></div>
+              <span class="legend-name">Failed cash-in</span>
+              <span class="legend-pct" style="color:var(--red)">12%</span>
+            </div>
+            <div class="legend-row">
+              <div class="legend-swatch" style="background:var(--gold)"></div>
+              <span class="legend-name">Lost briefcase</span>
+              <span class="legend-pct" style="color:var(--gold)">5%</span>
+            </div>
+            <div style="height:1px;background:var(--border);margin:14px 0;"></div>
+            <p style="font-size:11px;color:var(--text-3);line-height:1.5;">Men's success rate: 77%<br>Women's success rate: 100%</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Men's vs. Women's Division</div>
+        <div class="split-labels">
+          <div class="split-side">
+            <div class="split-n" style="color:var(--blue)">22</div>
+            <span class="split-tag">Men's Winners</span>
+          </div>
+          <div class="split-side" style="text-align:right;">
+            <div class="split-n" style="color:var(--pink)">18</div>
+            <span class="split-tag">Women's Winners</span>
+          </div>
+        </div>
+        <div class="split-bar">
+          <div class="split-men" style="width:55%"></div>
+          <div class="split-women" style="width:45%"></div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-header"><span class="bar-name">Men's cash-in success</span><span class="bar-val">77%</span></div>
+          <div class="track"><div class="fill fill-blue" style="width:77%"></div></div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-header"><span class="bar-name">Women's cash-in success</span><span class="bar-val">100%</span></div>
+          <div class="track"><div class="fill fill-pink" style="width:100%"></div></div>
+        </div>
+        <p style="font-size:11px;color:var(--text-3);margin-top:16px;line-height:1.5;">The Women's division was introduced in 2017 and has maintained a perfect championship conversion rate across all nine holders.</p>
+      </div>
+    </div>
+
+    <div class="chart-row fade-in">
+      <div class="card">
+        <div class="card-title">Multi-Briefcase Holders</div>
+        <div class="bar-row"><div class="bar-header"><span class="bar-name">CM Punk</span><span class="bar-val">2×</span></div><div class="track"><div class="fill fill-gold" style="width:100%"></div></div></div>
+        <div class="bar-row"><div class="bar-header"><span class="bar-name">Seth Rollins</span><span class="bar-val">2×</span></div><div class="track"><div class="fill fill-gold" style="width:100%"></div></div></div>
+        <div class="bar-row"><div class="bar-header"><span class="bar-name">Edge</span><span class="bar-val">2×</span></div><div class="track"><div class="fill fill-gold" style="width:100%"></div></div></div>
+        <div class="bar-row"><div class="bar-header"><span class="bar-name">The Miz</span><span class="bar-val">2×</span></div><div class="track"><div class="fill fill-gold" style="width:100%"></div></div></div>
+        <div class="bar-row"><div class="bar-header"><span class="bar-name">Carmella</span><span class="bar-val">2×</span></div><div class="track"><div class="fill fill-pink" style="width:100%"></div></div></div>
+        <div style="height:1px;background:var(--border);margin:16px 0;"></div>
+        <p style="font-size:11px;color:var(--text-3);line-height:1.5;">CM Punk is the only superstar to win back-to-back (2008 & 2009). Edge and The Miz each won once by stealing a briefcase.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Cash-In Timing</div>
+        <div class="timing-grid">
+          <div class="timing-row"><span class="timing-label">Same day</span><div class="timing-track"><div class="fill fill-green" style="width:50%"></div></div><span class="timing-count">5 holders</span></div>
+          <div class="timing-row"><span class="timing-label">1–30 days</span><div class="timing-track"><div class="fill fill-gold" style="width:70%"></div></div><span class="timing-count">8 holders</span></div>
+          <div class="timing-row"><span class="timing-label">31–90 days</span><div class="timing-track"><div class="fill fill-gold" style="width:60%"></div></div><span class="timing-count">7 holders</span></div>
+          <div class="timing-row"><span class="timing-label">91–180 days</span><div class="timing-track"><div class="fill fill-blue" style="width:48%"></div></div><span class="timing-count">6 holders</span></div>
+          <div class="timing-row"><span class="timing-label">180+ days</span><div class="timing-track"><div class="fill fill-muted" style="width:38%"></div></div><span class="timing-count">5 holders</span></div>
+        </div>
+        <div style="height:1px;background:var(--border);margin:16px 0;"></div>
+        <p style="font-size:11px;color:var(--text-3);line-height:1.5;">Fastest: Alexa Bliss (2h 52m, 2018) · Most patient: Seth Rollins (273 days, 2014)</p>
+      </div>
+    </div>
+
+    <div class="section-label">Landmark Cash-Ins</div>
+    <div class="highlights-grid fade-in">
+      <div class="hl-card"><span class="hl-icon">🩼</span><div class="hl-label">Greatest Deception</div><div class="hl-name">Seth Rollins — 2025</div><div class="hl-desc">Faked a career-ending injury for weeks, convincing fans and media, then threw down his crutches at SummerSlam to cash in on CM Punk and win the World Heavyweight Title.</div></div>
+      <div class="hl-card"><span class="hl-icon">🌀</span><div class="hl-label">Triple Threat Chaos</div><div class="hl-name">Naomi — 2025</div><div class="hl-desc">Crashed the IYO Sky vs Rhea Ripley match at Evolution PLE, turning it into a Triple Threat and winning the Women's World Championship ~30 days after winning MITB.</div></div>
+      <div class="hl-card"><span class="hl-icon">🏟️</span><div class="hl-label">WrestleMania Moment</div><div class="hl-name">Seth Rollins — 2014</div><div class="hl-desc">Cashed in during the WrestleMania 31 main event between Lesnar and Reigns, pinning Reigns to close the show — universally regarded the most iconic cash-in ever.</div></div>
+      <div class="hl-card"><span class="hl-icon">⚡</span><div class="hl-label">Fastest Cash-In</div><div class="hl-name">Alexa Bliss — 2018</div><div class="hl-desc">Cashed in just 2 hours and 52 minutes after winning the MITB briefcase, defeating Nia Jax for the Raw Women's Championship the same night.</div></div>
+      <div class="hl-card"><span class="hl-icon">🎭</span><div class="hl-label">Most Patient Wait</div><div class="hl-name">Dolph Ziggler — 2012</div><div class="hl-desc">Held the briefcase 267 days before the perfect ambush cash-in on a beaten Alberto Del Rio to win the World Heavyweight Championship.</div></div>
+      <div class="hl-card"><span class="hl-icon">👑</span><div class="hl-label">First Ever Winner</div><div class="hl-name">Edge — 2005</div><div class="hl-desc">Won at WrestleMania 21, waited nine months, then cashed in post-Elimination Chamber on an exhausted John Cena to claim the WWE Championship and write history.</div></div>
+    </div>
+
+  </section>
+
+  <!-- ═══════════ ALL WINNERS ═══════════ -->
+  <section id="panel-winners" class="panel">
+    <div class="search-row">
+      <input class="search-input" type="text" placeholder="Search name, year, brand…" id="searchInput" oninput="filterWinners()">
+      <button class="filter-btn active" onclick="filterGender('all',this)">All</button>
+      <button class="filter-btn" onclick="filterGender('men',this)">Men's</button>
+      <button class="filter-btn" onclick="filterGender('women',this)">Women's</button>
+    </div>
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Year</th>
+            <th>Superstar</th>
+            <th>Brand</th>
+            <th>Division</th>
+            <th>Result</th>
+            <th>Days Held</th>
+            <th>Championship Target</th>
+          </tr>
+        </thead>
+        <tbody id="winnersBody">
+          <tr data-gender="men"><td class="cell-year">2005</td><td><div class="cell-name">Edge</div><div class="cell-sub">WrestleMania 21 · First ever winner</div></td><td class="cell-brand">RAW</td><td class="cell-brand">Men's</td><td><span class="badge badge-win">Won</span></td><td class="days-val">~270</td><td style="font-size:12px;color:var(--text-2)">WWE Championship</td></tr>
+          <tr data-gender="men"><td class="cell-year">2006</td><td><div class="cell-name">Rob Van Dam</div><div class="cell-sub">WrestleMania 22</div></td><td class="cell-brand">RAW</td><td class="cell-brand">Men's</td><td><span class="badge badge-win">Won</span></td><td class="days-val">62</td><td style="font-size:12px;color:var(--text-2)">WWE Championship</td></tr>
+          <tr data-gender="men"><td class="cell-year">2007</td><td><div class="cell-name">Mr. Kennedy <span class="stolen-tag">Lost</span></div><div class="cell-sub">WrestleMania 23 — briefcase stolen by Edge</div></td><td class="cell-brand">RAW</td><td class="cell-brand">Men's</td><td><span class="badge badge-event">Lost Briefcase</span></td><td class="days-val">36</td><td style="font-size:12px;color:var(--text-2)">N/A</td></tr>
+          <tr data-gender="men"><td class="cell-year">2007</td><td><div class="cell-name">Edge <span class="stolen-tag">Acquired</span></div><div class="cell-sub">Stolen from Mr. Kennedy</div></td><td class="cell-brand">RAW</td><td class="cell-brand">Men's</td><td><span class="badge badge-win">Won</span></td><td class="days-val">4</td><td style="font-size:12px;color:var(--text-2)">World Heavyweight</td></tr>
+          <tr data-gender="men"><td class="cell-year">2008</td><td><div class="cell-name">CM Punk</div><div class="cell-sub">WrestleMania XXIV</div></td><td class="cell-brand">RAW</td><td class="cell-brand">Men's</td><td><span class="badge badge-win">Won</span></td><td class="days-val">~75</td><td style="font-size:12px;color:var(--text-2)">World Heavyweight</td></tr>
+          <tr data-gender="men"><td class="cell-year">2009</td><td><div class="cell-name">CM Punk</div><div class="cell-sub">WrestleMania XXV · Back-to-back winner</div></td><td class="cell-brand">RAW</td><td class="cell-brand">Men's</td><td><span class="badge badge-win">Won</span></td><td class="days-val">~91</td><td style="font-size:12px;color:var(--text-2)">World Heavyweight</td></tr>
+          <tr data-gender="men"><td class="cell-year">2010</td><td><div class="cell-name">Jack Swagger</div><div class="cell-sub">WrestleMania XXVI</div></td><td class="cell-brand">RAW</td><td class="cell-brand">Men's</td><td><span class="badge badge-win">Won</span></td><td class="days-val">7</td><td style="font-size:12px;color:var(--text-2)">World Heavyweight</td></tr>
+          <tr data-gender="men"><td class="cell-year">2010</td><td><div class="cell-name">The Miz</div><div class="cell-sub">MITB 2010 (Raw match)</div></td><td class="cell-brand">RAW</td><td class="cell-brand">Men's</td><td><span class="badge badge-win">Won</span></td><td class="days-val">127</td><td style="font-size:12px;color:var(--text-2)">WWE Championship</td></tr>
+          <tr data-gender="men"><td class="cell-year">2010</td><td><div class="cell-name">Dolph Ziggler</div><div class="cell-sub">MITB 2010 (SD match)</div></td><td class="cell-brand">SmackDown</td><td class="cell-brand">Men's</td><td><span class="badge badge-win">Won</span></td><td class="days-val">267</td><td style="font-size:12px;color:var(--text-2)">World Heavyweight</td></tr>
+          <tr data-gender="men"><td class="cell-year">2011</td><td><div class="cell-name">Daniel Bryan</div><div class="cell-sub">MITB 2011 (SD match)</div></td><td class="cell-brand">SmackDown</td><td class="cell-brand">Men's</td><td><span class="badge badge-win">Won</span></td><td class="days-val">154</td><td style="font-size:12px;color:var(--text-2)">World Heavyweight</td></tr>
+          <tr data-gender="men"><td class="cell-year">2011</td><td><div class="cell-name">Alberto Del Rio</div><div class="cell-sub">MITB 2011 (Raw match)</div></td><td class="cell-brand">RAW</td><td class="cell-brand">Men's</td><td><span class="badge badge-win">Won</span></td><td class="days-val">28</td><td style="font-size:12px;color:var(--text-2)">WWE Championship</td></tr>
+          <tr data-gender="men"><td class="cell-year">2012</td><td><div class="cell-name">John Cena</div><div class="cell-sub">MITB 2012 (Raw match)</div></td><td class="cell-brand">RAW</td><td class="cell-brand">Men's</td><td><span class="badge badge-loss">Failed</span></td><td class="days-val">8</td><td style="font-size:12px;color:var(--text-2)">WWE Championship</td></tr>
+          <tr data-gender="men"><td class="cell-year">2012</td><td><div class="cell-name">Dolph Ziggler</div><div class="cell-sub">MITB 2012 (SD match)</div></td><td class="cell-brand">SmackDown</td><td class="cell-brand">Men's</td><td><span class="badge badge-win">Won</span></td><td class="days-val">267</td><td style="font-size:12px;color:var(--text-2)">World Heavyweight</td></tr>
+          <tr data-gender="men"><td class="cell-year">2013</td><td><div class="cell-name">Damien Sandow</div><div class="cell-sub">MITB 2013</div></td><td class="cell-brand">SmackDown</td><td class="cell-brand">Men's</td><td><span class="badge badge-loss">Failed</span></td><td class="days-val">106</td><td style="font-size:12px;color:var(--text-2)">World Heavyweight</td></tr>
+          <tr data-gender="men"><td class="cell-year">2013</td><td><div class="cell-name">Randy Orton</div><div class="cell-sub">MITB 2013</div></td><td class="cell-brand">RAW</td><td class="cell-brand">Men's</td><td><span class="badge badge-win">Won</span></td><td class="days-val">35</td><td style="font-size:12px;color:var(--text-2)">WWE Championship</td></tr>
+          <tr data-gender="men"><td class="cell-year">2014</td><td><div class="cell-name">Seth Rollins</div><div class="cell-sub">MITB 2014 · WM31 cash-in</div></td><td class="cell-brand">RAW</td><td class="cell-brand">Men's</td><td><span class="badge badge-win">Won</span></td><td class="days-val">273</td><td style="font-size:12px;color:var(--text-2)">WWE World Heavyweight</td></tr>
+          <tr data-gender="men"><td class="cell-year">2015</td><td><div class="cell-name">Sheamus</div><div class="cell-sub">MITB 2015</div></td><td class="cell-brand">RAW</td><td class="cell-brand">Men's</td><td><span class="badge badge-win">Won</span></td><td class="days-val">161</td><td style="font-size:12px;color:var(--text-2)">WWE World Heavyweight</td></tr>
+          <tr data-gender="men"><td class="cell-year">2016</td><td><div class="cell-name">Dean Ambrose</div><div class="cell-sub">MITB 2016 · Same-night cash-in</div></td><td class="cell-brand">RAW</td><td class="cell-brand">Men's</td><td><span class="badge badge-win">Won</span></td><td class="days-val">&lt;1</td><td style="font-size:12px;color:var(--text-2)">WWE World Heavyweight</td></tr>
+          <tr data-gender="men"><td class="cell-year">2017</td><td><div class="cell-name">Baron Corbin</div><div class="cell-sub">MITB 2017</div></td><td class="cell-brand">SmackDown</td><td class="cell-brand">Men's</td><td><span class="badge badge-loss">Failed</span></td><td class="days-val">58</td><td style="font-size:12px;color:var(--text-2)">WWE Championship</td></tr>
+          <tr data-gender="men"><td class="cell-year">2018</td><td><div class="cell-name">Braun Strowman</div><div class="cell-sub">MITB 2018</div></td><td class="cell-brand">RAW</td><td class="cell-brand">Men's</td><td><span class="badge badge-win">Won</span></td><td class="days-val">~150</td><td style="font-size:12px;color:var(--text-2)">Universal Championship</td></tr>
+          <tr data-gender="men"><td class="cell-year">2019</td><td><div class="cell-name">Brock Lesnar</div><div class="cell-sub">MITB 2019 · Next-day cash-in</div></td><td class="cell-brand">RAW</td><td class="cell-brand">Men's</td><td><span class="badge badge-win">Won</span></td><td class="days-val">1</td><td style="font-size:12px;color:var(--text-2)">WWE Championship</td></tr>
+          <tr data-gender="men"><td class="cell-year">2020</td><td><div class="cell-name">Otis <span class="stolen-tag">Lost</span></div><div class="cell-sub">MITB 2020 — briefcase stolen by The Miz</div></td><td class="cell-brand">SmackDown</td><td class="cell-brand">Men's</td><td><span class="badge badge-event">Lost Briefcase</span></td><td class="days-val">~161</td><td style="font-size:12px;color:var(--text-2)">N/A</td></tr>
+          <tr data-gender="men"><td class="cell-year">2020</td><td><div class="cell-name">The Miz <span class="stolen-tag">Acquired</span></div><div class="cell-sub">Stolen from Otis</div></td><td class="cell-brand">RAW</td><td class="cell-brand">Men's</td><td><span class="badge badge-win">Won</span></td><td class="days-val">~30</td><td style="font-size:12px;color:var(--text-2)">WWE Championship</td></tr>
+          <tr data-gender="men"><td class="cell-year">2021</td><td><div class="cell-name">Big E</div><div class="cell-sub">MITB 2021</div></td><td class="cell-brand">RAW</td><td class="cell-brand">Men's</td><td><span class="badge badge-win">Won</span></td><td class="days-val">57</td><td style="font-size:12px;color:var(--text-2)">WWE Championship</td></tr>
+          <tr data-gender="men"><td class="cell-year">2022</td><td><div class="cell-name">Austin Theory</div><div class="cell-sub">MITB 2022 · Cashed on US Title</div></td><td class="cell-brand">RAW</td><td class="cell-brand">Men's</td><td><span class="badge badge-loss">Failed</span></td><td class="days-val">128</td><td style="font-size:12px;color:var(--text-2)">United States Championship</td></tr>
+          <tr data-gender="men"><td class="cell-year">2023</td><td><div class="cell-name">Damian Priest</div><div class="cell-sub">MITB 2023 · WM40 cash-in</div></td><td class="cell-brand">RAW</td><td class="cell-brand">Men's</td><td><span class="badge badge-win">Won</span></td><td class="days-val">~275</td><td style="font-size:12px;color:var(--text-2)">World Heavyweight</td></tr>
+          <tr data-gender="men"><td class="cell-year">2024</td><td><div class="cell-name">Drew McIntyre</div><div class="cell-sub">MITB 2024 · Same-night failure</div></td><td class="cell-brand">RAW</td><td class="cell-brand">Men's</td><td><span class="badge badge-loss">Failed</span></td><td class="days-val">&lt;1</td><td style="font-size:12px;color:var(--text-2)">World Heavyweight</td></tr>
+          <tr data-gender="men"><td class="cell-year">2025</td><td><div class="cell-name">Seth Rollins</div><div class="cell-sub">MITB 2025 · SummerSlam cash-in on CM Punk</div></td><td class="cell-brand">RAW</td><td class="cell-brand">Men's</td><td><span class="badge badge-win">Won</span></td><td class="days-val">~60</td><td style="font-size:12px;color:var(--text-2)">World Heavyweight Championship</td></tr>
+          <!-- WOMEN'S -->
+          <tr data-gender="women"><td class="cell-year">2017</td><td><div class="cell-name">Carmella</div><div class="cell-sub">MITB 2017 · Won rematch cleanly</div></td><td class="cell-brand">SmackDown</td><td class="cell-brand" style="color:var(--pink)">Women's</td><td><span class="badge badge-win">Won</span></td><td class="days-val">287</td><td style="font-size:12px;color:var(--text-2)">SD Women's Championship</td></tr>
+          <tr data-gender="women"><td class="cell-year">2018</td><td><div class="cell-name">Alexa Bliss</div><div class="cell-sub">MITB 2018 · 2h 52m cash-in</div></td><td class="cell-brand">RAW</td><td class="cell-brand" style="color:var(--pink)">Women's</td><td><span class="badge badge-win">Won</span></td><td class="days-val">&lt;1</td><td style="font-size:12px;color:var(--text-2)">Raw Women's Championship</td></tr>
+          <tr data-gender="women"><td class="cell-year">2019</td><td><div class="cell-name">Bayley</div><div class="cell-sub">MITB 2019 · Same-night cash-in</div></td><td class="cell-brand">SmackDown</td><td class="cell-brand" style="color:var(--pink)">Women's</td><td><span class="badge badge-win">Won</span></td><td class="days-val">&lt;1</td><td style="font-size:12px;color:var(--text-2)">Raw Women's Championship</td></tr>
+          <tr data-gender="women"><td class="cell-year">2020</td><td><div class="cell-name">Asuka</div><div class="cell-sub">MITB 2020 · Awarded title directly</div></td><td class="cell-brand">RAW</td><td class="cell-brand" style="color:var(--pink)">Women's</td><td><span class="badge badge-event">Awarded</span></td><td class="days-val">1</td><td style="font-size:12px;color:var(--text-2)">Raw Women's Championship</td></tr>
+          <tr data-gender="women"><td class="cell-year">2021</td><td><div class="cell-name">Nikki A.S.H.</div><div class="cell-sub">MITB 2021 · Next-day cash-in</div></td><td class="cell-brand">RAW</td><td class="cell-brand" style="color:var(--pink)">Women's</td><td><span class="badge badge-win">Won</span></td><td class="days-val">1</td><td style="font-size:12px;color:var(--text-2)">Raw Women's Championship</td></tr>
+          <tr data-gender="women"><td class="cell-year">2022</td><td><div class="cell-name">Liv Morgan</div><div class="cell-sub">MITB 2022 · Same-night cash-in</div></td><td class="cell-brand">SmackDown</td><td class="cell-brand" style="color:var(--pink)">Women's</td><td><span class="badge badge-win">Won</span></td><td class="days-val">&lt;1</td><td style="font-size:12px;color:var(--text-2)">SD Women's Championship</td></tr>
+          <tr data-gender="women"><td class="cell-year">2023</td><td><div class="cell-name">IYO SKY</div><div class="cell-sub">MITB 2023 · SummerSlam cash-in</div></td><td class="cell-brand">SmackDown</td><td class="cell-brand" style="color:var(--pink)">Women's</td><td><span class="badge badge-win">Won</span></td><td class="days-val">35</td><td style="font-size:12px;color:var(--text-2)">WWE Women's Championship</td></tr>
+          <tr data-gender="women"><td class="cell-year">2024</td><td><div class="cell-name">Tiffany Stratton</div><div class="cell-sub">MITB 2024</div></td><td class="cell-brand">SmackDown</td><td class="cell-brand" style="color:var(--pink)">Women's</td><td><span class="badge badge-win">Won</span></td><td class="days-val">~180</td><td style="font-size:12px;color:var(--text-2)">WWE Women's Championship</td></tr>
+          <tr data-gender="women"><td class="cell-year">2025</td><td><div class="cell-name">Naomi</div><div class="cell-sub">MITB 2025 · Evolution Triple Threat cash-in</div></td><td class="cell-brand">SmackDown</td><td class="cell-brand" style="color:var(--pink)">Women's</td><td><span class="badge badge-win">Won</span></td><td class="days-val">~30</td><td style="font-size:12px;color:var(--text-2)">Women's World Championship</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ═══════════ TIMELINE ═══════════ -->
+  <section id="panel-timeline" class="panel">
+    <div class="tl-grid">
+      <div>
+        <div class="section-label">Men's Division — 2005 to 2025</div>
+        <div class="tl-list">
+          <div class="tl-item"><div class="tl-year-col">2005</div><div class="tl-spine"><div class="tl-dot win"></div></div><div class="tl-body"><div class="tl-name">Edge</div><div class="tl-detail">WM21 · First MITB ever · Cashed in on exhausted Cena post-Elimination Chamber</div></div></div>
+          <div class="tl-item"><div class="tl-year-col">2006</div><div class="tl-spine"><div class="tl-dot win"></div></div><div class="tl-body"><div class="tl-name">Rob Van Dam</div><div class="tl-detail">WM22 · Cash-in on Cena helped promote ECW's revival as a third brand</div></div></div>
+          <div class="tl-item"><div class="tl-year-col">2007</div><div class="tl-spine"><div class="tl-dot event"></div></div><div class="tl-body"><div class="tl-name">Mr. Kennedy → Edge</div><div class="tl-detail">WM23 · Kennedy taunted into a wager, lost briefcase; Edge cashed in on an injured Undertaker four days later</div></div></div>
+          <div class="tl-item"><div class="tl-year-col">2008</div><div class="tl-spine"><div class="tl-dot win"></div></div><div class="tl-body"><div class="tl-name">CM Punk</div><div class="tl-detail">WM XXIV · Begins historic back-to-back run</div></div></div>
+          <div class="tl-item"><div class="tl-year-col">2009</div><div class="tl-spine"><div class="tl-dot win"></div></div><div class="tl-body"><div class="tl-name">CM Punk</div><div class="tl-detail">WM XXV · Only back-to-back MITB winner in history</div></div></div>
+          <div class="tl-item"><div class="tl-year-col">2010</div><div class="tl-spine"><div class="tl-dot win"></div></div><div class="tl-body"><div class="tl-name">Swagger / Miz / Ziggler</div><div class="tl-detail">MITB becomes its own PPV; two briefcases for the first time</div></div></div>
+          <div class="tl-item"><div class="tl-year-col">2011</div><div class="tl-spine"><div class="tl-dot win"></div></div><div class="tl-body"><div class="tl-name">Daniel Bryan / Alberto Del Rio</div><div class="tl-detail">Bryan's 154-day patience leads to an iconic World Heavyweight Championship win</div></div></div>
+          <div class="tl-item"><div class="tl-year-col">2012</div><div class="tl-spine"><div class="tl-dot fail"></div></div><div class="tl-body"><div class="tl-name">John Cena ✗</div><div class="tl-detail">Rare failed cash-in by an elite superstar; Ziggler meanwhile bides his time for 267 days</div></div></div>
+          <div class="tl-item"><div class="tl-year-col">2013</div><div class="tl-spine"><div class="tl-dot fail"></div></div><div class="tl-body"><div class="tl-name">Damien Sandow ✗</div><div class="tl-detail">Couldn't beat a one-armed Cena — became one of wrestling's most beloved losing moments</div></div></div>
+          <div class="tl-item"><div class="tl-year-col">2014</div><div class="tl-spine"><div class="tl-dot win"></div></div><div class="tl-body"><div class="tl-name">Seth Rollins</div><div class="tl-detail">273 days → WrestleMania 31 triple-threat crash — the most iconic cash-in in MITB history</div></div></div>
+          <div class="tl-item"><div class="tl-year-col">2016</div><div class="tl-spine"><div class="tl-dot win"></div></div><div class="tl-body"><div class="tl-name">Dean Ambrose</div><div class="tl-detail">Cashed in minutes after winning — same event, same night</div></div></div>
+          <div class="tl-item"><div class="tl-year-col">2019</div><div class="tl-spine"><div class="tl-dot win"></div></div><div class="tl-body"><div class="tl-name">Brock Lesnar</div><div class="tl-detail">Announced winner; cashed in the next night on Seth Rollins for the WWE Championship</div></div></div>
+          <div class="tl-item"><div class="tl-year-col">2020</div><div class="tl-spine"><div class="tl-dot event"></div></div><div class="tl-body"><div class="tl-name">Otis → The Miz</div><div class="tl-detail">Miz steals Otis's contract; cashes in on a beaten Big E to win the WWE title</div></div></div>
+          <div class="tl-item"><div class="tl-year-col">2023</div><div class="tl-spine"><div class="tl-dot win"></div></div><div class="tl-body"><div class="tl-name">Damian Priest</div><div class="tl-detail">~275 days → WM40 Night 2 cash-in on McIntyre; only the second WrestleMania cash-in ever</div></div></div>
+          <div class="tl-item"><div class="tl-year-col">2024</div><div class="tl-spine"><div class="tl-dot fail"></div></div><div class="tl-body"><div class="tl-name">Drew McIntyre ✗</div><div class="tl-detail">Same-night cash-in backfired; CM Punk's interference caused McIntyre to lose, Priest retained</div></div></div>
+          <div class="tl-item"><div class="tl-year-col">2025</div><div class="tl-spine"><div class="tl-dot win"></div></div><div class="tl-body"><div class="tl-name">Seth Rollins</div><div class="tl-detail">MITB 2025 · Faked injury for weeks → SummerSlam: threw down crutches, cashed in on CM Punk, won World Heavyweight Title. Relinquished due to real shoulder injury.</div></div></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-label">Women's Division — 2017 to 2025</div>
+        <div class="tl-list">
+          <div class="tl-item"><div class="tl-year-col">2017</div><div class="tl-spine"><div class="tl-dot women"></div></div><div class="tl-body"><div class="tl-name">Carmella</div><div class="tl-detail">First-ever women's winner; Ellsworth controversy → ladder rematch won cleanly · 287 days · Charlotte Flair</div></div></div>
+          <div class="tl-item"><div class="tl-year-col">2018</div><div class="tl-spine"><div class="tl-dot women"></div></div><div class="tl-body"><div class="tl-name">Alexa Bliss</div><div class="tl-detail">Fastest women's cash-in: 2h 52m — defeated Nia Jax for the Raw Women's Championship</div></div></div>
+          <div class="tl-item"><div class="tl-year-col">2019</div><div class="tl-spine"><div class="tl-dot women"></div></div><div class="tl-body"><div class="tl-name">Bayley</div><div class="tl-detail">Same-night cash-in (~1h 25m) on Becky Lynch; capitalized on a spent champion</div></div></div>
+          <div class="tl-item"><div class="tl-year-col">2020</div><div class="tl-spine"><div class="tl-dot event"></div></div><div class="tl-body"><div class="tl-name">Asuka</div><div class="tl-detail">Unique case: never formally cashed in. WWE awarded her the Raw Women's Championship directly the following night.</div></div></div>
+          <div class="tl-item"><div class="tl-year-col">2021</div><div class="tl-spine"><div class="tl-dot women"></div></div><div class="tl-body"><div class="tl-name">Nikki A.S.H.</div><div class="tl-detail">Held just one day before cashing in on Charlotte Flair at SummerSlam 2021</div></div></div>
+          <div class="tl-item"><div class="tl-year-col">2022</div><div class="tl-spine"><div class="tl-dot women"></div></div><div class="tl-body"><div class="tl-name">Liv Morgan</div><div class="tl-detail">Same-night cash-in on Ronda Rousey at MITB 2022 to win the SmackDown Women's Championship</div></div></div>
+          <div class="tl-item"><div class="tl-year-col">2023</div><div class="tl-spine"><div class="tl-dot women"></div></div><div class="tl-body"><div class="tl-name">IYO SKY</div><div class="tl-detail">35-day wait → SummerSlam cash-in on Bianca Belair for the WWE Women's Championship</div></div></div>
+          <div class="tl-item"><div class="tl-year-col">2024</div><div class="tl-spine"><div class="tl-dot women"></div></div><div class="tl-body"><div class="tl-name">Tiffany Stratton</div><div class="tl-detail">Won one of the most acclaimed MITB matches in history; successfully cashed in for the WWE Women's Championship</div></div></div>
+          <div class="tl-item"><div class="tl-year-col">2025</div><div class="tl-spine"><div class="tl-dot women"></div></div><div class="tl-body"><div class="tl-name">Naomi</div><div class="tl-detail">~30-day hold → Evolution PLE: crashed IYO Sky vs Rhea Ripley, turned it into a Triple Threat, won the Women's World Championship</div></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ RECORDS ═══════════ -->
+  <section id="panel-records" class="panel">
+    <div class="section-label">All-Time Records</div>
+    <div class="records-grid fade-in">
+      <div class="record-cell"><div class="record-n">CM Punk</div><div class="record-title">Only Back-to-Back Winner</div><div class="record-sub">2008 & 2009 — both successful cash-ins</div></div>
+      <div class="record-cell"><div class="record-n">273 days</div><div class="record-title">Longest Briefcase Reign</div><div class="record-sub">Seth Rollins, 2014 — cashed at WrestleMania 31</div></div>
+      <div class="record-cell"><div class="record-n">2h 52m</div><div class="record-title">Fastest Cash-In Ever</div><div class="record-sub">Alexa Bliss, 2018 — defeated Nia Jax same night</div></div>
+      <div class="record-cell"><div class="record-n">100%</div><div class="record-title">Women's Conversion Rate</div><div class="record-sub">9 of 9 women's holders became champion</div></div>
+    </div>
+
+    <div class="section-label">Hall of Distinction</div>
+    <div class="three-col fade-in">
+      <div class="card">
+        <div class="card-title">Multi-Briefcase Holders</div>
+        <div class="bar-row"><div class="bar-header"><span class="bar-name">CM Punk</span><span class="bar-val">2×</span></div><div class="track"><div class="fill fill-gold" style="width:100%"></div></div></div>
+        <div class="bar-row"><div class="bar-header"><span class="bar-name">Seth Rollins</span><span class="bar-val">2×</span></div><div class="track"><div class="fill fill-gold" style="width:100%"></div></div></div>
+        <div class="bar-row"><div class="bar-header"><span class="bar-name">Edge</span><span class="bar-val">2×</span></div><div class="track"><div class="fill fill-gold" style="width:100%"></div></div></div>
+        <div class="bar-row"><div class="bar-header"><span class="bar-name">The Miz</span><span class="bar-val">2×</span></div><div class="track"><div class="fill fill-gold" style="width:100%"></div></div></div>
+        <div class="bar-row"><div class="bar-header"><span class="bar-name">Carmella</span><span class="bar-val">2×</span></div><div class="track"><div class="fill fill-pink" style="width:100%"></div></div></div>
+        <p style="font-size:11px;color:var(--text-3);margin-top:16px;line-height:1.5;">CM Punk won consecutive years. Edge and The Miz each won once by stealing a briefcase from its original holder.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">WrestleMania Cash-Ins</div>
+        <div style="padding-bottom:18px;margin-bottom:18px;border-bottom:1px solid var(--border);">
+          <p style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--text-3);margin-bottom:6px;">WM31 · 2014</p>
+          <p style="font-weight:600;font-size:15px;margin-bottom:5px;">Seth Rollins</p>
+          <p style="font-size:12px;color:var(--text-2);font-weight:300;line-height:1.5;">Crashed the Lesnar–Reigns main event, pinning Roman Reigns — universally regarded the most iconic cash-in in MITB history.</p>
+        </div>
+        <div>
+          <p style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--text-3);margin-bottom:6px;">WM40 · 2023</p>
+          <p style="font-weight:600;font-size:15px;margin-bottom:5px;">Damian Priest</p>
+          <p style="font-size:12px;color:var(--text-2);font-weight:300;line-height:1.5;">WM40 Night 2 cash-in on Drew McIntyre — only the second superstar to ever cash in at WrestleMania.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Failed Cash-Ins</div>
+        <div style="display:flex;flex-direction:column;gap:0;">
+          <div style="padding:10px 0;border-bottom:1px solid var(--border)"><div style="font-weight:600;font-size:13px;">John Cena <span style="font-weight:300;font-size:11px;color:var(--text-3);">2012</span></div><div style="font-size:11px;color:var(--text-3);margin-top:2px;">Failed vs CM Punk — cash-in was poorly timed</div></div>
+          <div style="padding:10px 0;border-bottom:1px solid var(--border)"><div style="font-weight:600;font-size:13px;">Damien Sandow <span style="font-weight:300;font-size:11px;color:var(--text-3);">2013</span></div><div style="font-size:11px;color:var(--text-3);margin-top:2px;">Couldn't beat a one-armed John Cena; became a cult favourite</div></div>
+          <div style="padding:10px 0;border-bottom:1px solid var(--border)"><div style="font-weight:600;font-size:13px;">Baron Corbin <span style="font-weight:300;font-size:11px;color:var(--text-3);">2017</span></div><div style="font-size:11px;color:var(--text-3);margin-top:2px;">Failed vs Jinder Mahal with Cena interference</div></div>
+          <div style="padding:10px 0;border-bottom:1px solid var(--border)"><div style="font-weight:600;font-size:13px;">Austin Theory <span style="font-weight:300;font-size:11px;color:var(--text-3);">2022</span></div><div style="font-size:11px;color:var(--text-3);margin-top:2px;">Only holder to target a mid-card title; lost to Rollins</div></div>
+          <div style="padding:10px 0"><div style="font-weight:600;font-size:13px;">Drew McIntyre <span style="font-weight:300;font-size:11px;color:var(--text-3);">2024</span></div><div style="font-size:11px;color:var(--text-3);margin-top:2px;">CM Punk's interference backfired; Priest retained</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label">Men's Championship Targets</div>
+    <div class="card fade-in">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;">
+        <div>
+          <div class="bar-row"><div class="bar-header"><span class="bar-name">WWE Championship</span><span class="bar-val">10×</span></div><div class="track"><div class="fill fill-gold" style="width:100%"></div></div></div>
+          <div class="bar-row"><div class="bar-header"><span class="bar-name">World Heavyweight Title</span><span class="bar-val">9×</span></div><div class="track"><div class="fill fill-gold" style="width:90%"></div></div></div>
+        </div>
+        <div>
+          <div class="bar-row"><div class="bar-header"><span class="bar-name">Universal Championship</span><span class="bar-val">2×</span></div><div class="track"><div class="fill fill-blue" style="width:20%"></div></div></div>
+          <div class="bar-row"><div class="bar-header"><span class="bar-name">US Title (Austin Theory)</span><span class="bar-val">1×</span></div><div class="track"><div class="fill fill-red" style="width:10%"></div></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <span class="footer-note">WWE Money in the Bank · Historical Record 2005–2026</span>
+    <span class="footer-note">WWE is scripted sports entertainment · Data current as of April 2026</span>
+  </footer>
+
+</div>
+<script>
+  let currentGender = 'all';
+
+  function showPanel(id, btn) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('panel-' + id).classList.add('active');
+    btn.classList.add('active');
+    triggerFades();
+    animateBars();
+  }
+
+  function filterWinners() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    document.querySelectorAll('#winnersBody tr').forEach(row => {
+      const gOk = currentGender === 'all' || row.dataset.gender === currentGender;
+      const tOk = row.textContent.toLowerCase().includes(q);
+      row.style.display = gOk && tOk ? '' : 'none';
+    });
+  }
+
+  function filterGender(gender, btn) {
+    currentGender = gender;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filterWinners();
+  }
+
+  function triggerFades() {
+    setTimeout(() => {
+      const io = new IntersectionObserver(entries => {
+        entries.forEach((e, i) => {
+          if (e.isIntersecting) setTimeout(() => e.target.classList.add('visible'), i * 50);
+        });
+      }, { threshold: 0.05 });
+      document.querySelectorAll('.panel.active .fade-in').forEach(el => {
+        el.classList.remove('visible');
+        io.observe(el);
+      });
+    }, 40);
+  }
+
+  function animateBars() {
+    document.querySelectorAll('.fill').forEach(b => {
+      const w = b.style.width;
+      b.style.width = '0';
+      requestAnimationFrame(() => requestAnimationFrame(() => { b.style.width = w; }));
+    });
+  }
+
+  window.addEventListener('load', () => { triggerFades(); animateBars(); });
+</script>
+</body>
+</html>
