@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>G1 Climax — Tournament Analytics 1991–2025</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;700;900&family=Barlow:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0e0e10;
+  --surface: #17171a;
+  --surface2: #1f1f24;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.14);
+  --text: #e8e8ec;
+  --muted: #7a7a8a;
+  --accent: #e8302a;
+  --accent2: #ff6b35;
+  --gold: #d4ac0d;
+  --gold2: #f0cc40;
+  --purple: #9b87e8;
+  --green: #3dd68c;
+  --blue: #5b9cf6;
+  --teal: #2dd4bf;
+  --dec-90s: #9b87e8;
+  --dec-00s: #3dd68c;
+  --dec-10s: #ff6b35;
+  --dec-20s: #5b9cf6;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Barlow', sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ─── HERO ─────────────────────────────── */
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding: 64px 40px 48px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border2);
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 39px,
+    rgba(255,255,255,0.022) 39px,
+    rgba(255,255,255,0.022) 40px
+  );
+  pointer-events: none;
+}
+.hero-inner { max-width: 1100px; margin: 0 auto; position: relative; }
+.hero-eyebrow {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.hero-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: clamp(56px, 9vw, 110px);
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.hero-title span { color: var(--accent); }
+.hero-sub {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 20px;
+  font-weight: 300;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-top: 10px;
+}
+.hero-stats {
+  display: flex;
+  gap: 32px;
+  margin-top: 40px;
+  flex-wrap: wrap;
+}
+.hero-stat { }
+.hero-stat-val {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 38px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text);
+}
+.hero-stat-lbl {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.hero-divider { width: 1px; background: var(--border2); align-self: stretch; }
+
+/* ─── LAYOUT ────────────────────────────── */
+.shell { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+/* ─── TABS ──────────────────────────────── */
+.tabs-wrap {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(14,14,16,0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border2);
+}
+.tabs {
+  display: flex;
+  gap: 0;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+  overflow-x: auto;
+}
+.tab {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 16px 22px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: color .2s, border-color .2s;
+  background: none;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+}
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--text); }
+.tab[data-dec="all"].active { border-color: var(--gold); }
+.tab[data-dec="1990s"].active { border-color: var(--dec-90s); }
+.tab[data-dec="2000s"].active { border-color: var(--dec-00s); }
+.tab[data-dec="2010s"].active { border-color: var(--dec-10s); }
+.tab[data-dec="2020s"].active { border-color: var(--dec-20s); }
+.tab[data-dec="records"].active { border-color: var(--blue); }
+
+/* ─── DECADE HEADER ─────────────────────── */
+.decade-header {
+  padding: 36px 0 20px;
+  display: none;
+}
+.decade-header.visible { display: block; }
+.decade-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 56px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.decade-desc {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 8px;
+  letter-spacing: 0.04em;
+}
+.d90s { color: var(--dec-90s); }
+.d00s { color: var(--dec-00s); }
+.d10s { color: var(--dec-10s); }
+.d20s { color: var(--dec-20s); }
+
+/* ─── GRID ───────────────────────────────── */
+.editions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  padding-bottom: 40px;
+}
+
+/* ─── EDITION CARD ──────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  transition: border-color .2s, transform .15s;
+  cursor: pointer;
+}
+.card:hover { border-color: var(--border2); transform: translateY(-2px); }
+.card.expanded { border-color: var(--border2); }
+
+.card-header {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+}
+.card-year {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 42px;
+  font-weight: 900;
+  line-height: 1;
+  padding: 16px 18px;
+  writing-mode: horizontal-tb;
+  min-width: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid var(--border);
+  letter-spacing: -0.02em;
+}
+.card[data-dec="1990s"] .card-year { color: var(--dec-90s); }
+.card[data-dec="2000s"] .card-year { color: var(--dec-00s); }
+.card[data-dec="2010s"] .card-year { color: var(--dec-10s); }
+.card[data-dec="2020s"] .card-year { color: var(--dec-20s); }
+
+.card-top {
+  flex: 1;
+  padding: 14px 16px;
+}
+.card-winner {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+  color: var(--text);
+}
+.card-finalist {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 3px;
+  letter-spacing: 0.04em;
+}
+.card-finalist span { color: rgba(232,232,236,0.5); }
+.card-badges {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.badge {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+.badge-gaijin { background: rgba(232,48,42,0.2); color: var(--accent2); }
+.badge-backtoback { background: rgba(212,172,13,0.15); color: var(--gold2); }
+.badge-champ { background: rgba(155,135,232,0.2); color: var(--purple); }
+.badge-firsttime { background: rgba(61,214,140,0.15); color: var(--green); }
+.badge-classic { background: rgba(91,156,246,0.15); color: var(--blue); }
+
+.card-rating-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--surface2);
+}
+.rating-stars {
+  display: flex;
+  gap: 2px;
+}
+.star {
+  width: 8px;
+  height: 8px;
+  border-radius: 1px;
+}
+.rating-val {
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  color: var(--gold2);
+  font-weight: 700;
+}
+.rating-label {
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+}
+.cm-link {
+  margin-left: auto;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-decoration: none;
+  border: 1px solid var(--border2);
+  padding: 3px 8px;
+  border-radius: 3px;
+  transition: color .15s, border-color .15s;
+  font-family: 'Space Mono', monospace;
+}
+.cm-link:hover { color: var(--text); border-color: var(--border2); }
+
+/* ─── EXPANDABLE DETAIL ─────────────────── */
+.card-detail {
+  display: none;
+  border-top: 1px solid var(--border);
+}
+.card.expanded .card-detail { display: block; }
+
+/* ─── BRACKET ───────────────────────────── */
+.bracket-wrap {
+  padding: 20px 20px 16px;
+  background: linear-gradient(180deg, var(--surface2) 0%, var(--surface) 100%);
+  border-bottom: 1px solid var(--border);
+}
+.bracket-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+.bracket {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  font-family: 'Barlow Condensed', sans-serif;
+}
+.b-col { display: flex; flex-direction: column; gap: 8px; }
+.b-node {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 7px 12px;
+  min-width: 130px;
+  max-width: 170px;
+}
+.b-node-label {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 2px;
+  font-family: 'Space Mono', monospace;
+}
+.b-node-name {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+  color: var(--text);
+}
+.b-node-extra {
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.b-node.winner-node {
+  border-color: var(--gold);
+  background: rgba(212,172,13,0.06);
+}
+.b-node.winner-node .b-node-name { color: var(--gold2); }
+
+.b-connectors {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 36px;
+  position: relative;
+  align-self: stretch;
+}
+.b-line-v {
+  flex: 1;
+  width: 1px;
+  background: var(--border2);
+  margin-left: 0;
+}
+.b-line-h {
+  width: 36px;
+  height: 1px;
+  background: var(--border2);
+}
+
+.b-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.b-final-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  writing-mode: vertical-lr;
+  padding: 0 4px;
+  border: 1px solid rgba(232,48,42,0.3);
+  border-radius: 2px;
+  white-space: nowrap;
+}
+.b-arrow {
+  color: var(--border2);
+  font-size: 18px;
+}
+
+/* ─── ROUTE INFO ────────────────────────── */
+.route-info {
+  padding: 16px 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.route-section { }
+.route-section-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.route-section-text {
+  font-size: 13px;
+  color: rgba(232,232,236,0.85);
+  line-height: 1.55;
+}
+.route-section.full-width { grid-column: 1/-1; }
+
+/* Notable match */
+.notable-match {
+  margin: 0 20px 16px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.nm-icon {
+  font-size: 14px;
+  margin-top: 1px;
+  flex-shrink: 0;
+  color: var(--gold);
+}
+.nm-text { }
+.nm-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.nm-match {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  font-family: 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.nm-detail {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 1px;
+}
+
+/* ─── RECORDS PAGE ──────────────────────── */
+.records-page { padding: 36px 0 60px; display: none; }
+.records-page.visible { display: block; }
+.rec-section { margin-bottom: 40px; }
+.rec-section-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border2);
+}
+.leaderboard { }
+.lb-row {
+  display: grid;
+  grid-template-columns: 32px 1fr auto 2fr;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.lb-row:last-child { border-bottom: none; }
+.lb-rank {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  text-align: right;
+}
+.lb-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.lb-wins {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 28px;
+  font-weight: 900;
+  text-align: center;
+  min-width: 40px;
+}
+.lb-wins.top1 { color: var(--gold2); }
+.lb-wins.top2 { color: var(--accent2); }
+.lb-wins.top3 { color: var(--purple); }
+.lb-years {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.yr-chip {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 3px;
+  border: 1px solid;
+}
+.yr-chip[data-dec="1990s"] { border-color: var(--dec-90s); color: var(--dec-90s); background: rgba(155,135,232,0.1); }
+.yr-chip[data-dec="2000s"] { border-color: var(--dec-00s); color: var(--dec-00s); background: rgba(61,214,140,0.1); }
+.yr-chip[data-dec="2010s"] { border-color: var(--dec-10s); color: var(--dec-10s); background: rgba(255,107,53,0.1); }
+.yr-chip[data-dec="2020s"] { border-color: var(--dec-20s); color: var(--dec-20s); background: rgba(91,156,246,0.1); }
+
+.rec-table { width: 100%; border-collapse: collapse; }
+.rec-table tr { border-bottom: 1px solid var(--border); }
+.rec-table tr:last-child { border-bottom: none; }
+.rec-table td { padding: 9px 0; vertical-align: top; }
+.rec-table td:first-child {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  width: 200px;
+  padding-right: 20px;
+}
+.rec-table td:last-child { font-size: 13px; color: var(--text); }
+
+/* Cagematch ratings chart */
+.ratings-chart { margin: 20px 0; }
+.rc-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.rc-year {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  width: 40px;
+  text-align: right;
+}
+.rc-bar-wrap {
+  flex: 1;
+  height: 18px;
+  background: var(--surface2);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+.rc-bar {
+  height: 100%;
+  border-radius: 2px;
+  transition: width .4s;
+}
+.rc-val {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: var(--text);
+  width: 40px;
+}
+.rc-cm {
+  font-size: 10px;
+  color: var(--muted);
+  text-decoration: none;
+}
+.rc-cm:hover { color: var(--blue); }
+
+/* All editions panel */
+.all-editions-wrap { padding: 36px 0 60px; display: none; }
+.all-editions-wrap.visible { display: block; }
+
+/* fade in */
+@keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+.decade-section { animation: fadeIn .3s ease; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">New Japan Pro-Wrestling · Analytics Report</div>
+    <div class="hero-title">G<span>1</span><br>CLIMAX</div>
+    <div class="hero-sub">Complete Tournament History 1991 – 2025</div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-val">35</div>
+        <div class="hero-stat-lbl">Editions</div>
+      </div>
+      <div class="hero-divider"></div>
+      <div class="hero-stat">
+        <div class="hero-stat-val">24</div>
+        <div class="hero-stat-lbl">Unique Winners</div>
+      </div>
+      <div class="hero-divider"></div>
+      <div class="hero-stat">
+        <div class="hero-stat-val">5</div>
+        <div class="hero-stat-lbl">Chono's Record</div>
+      </div>
+      <div class="hero-divider"></div>
+      <div class="hero-stat">
+        <div class="hero-stat-val">2</div>
+        <div class="hero-stat-lbl">Gaijin Winners</div>
+      </div>
+      <div class="hero-divider"></div>
+      <div class="hero-stat">
+        <div class="hero-stat-val">★</div>
+        <div class="hero-stat-lbl">Cagematch Data</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="tabs-wrap">
+  <div class="tabs">
+    <button class="tab active" data-dec="all" onclick="showDec('all')">All</button>
+    <button class="tab" data-dec="1990s" onclick="showDec('1990s')">1990s</button>
+    <button class="tab" data-dec="2000s" onclick="showDec('2000s')">2000s</button>
+    <button class="tab" data-dec="2010s" onclick="showDec('2010s')">2010s</button>
+    <button class="tab" data-dec="2020s" onclick="showDec('2020s')">2020s</button>
+    <button class="tab" data-dec="records" onclick="showDec('records')">Records & Stats</button>
+  </div>
+</div>
+
+<div class="shell">
+
+<div id="main-grid"><!-- injected by JS --></div>
+
+<div class="records-page" id="records-page">
+  <div class="rec-section">
+    <div class="rec-section-title">All-Time Wins Leaderboard</div>
+    <div class="leaderboard" id="leaderboard"></div>
+  </div>
+  <div class="rec-section">
+    <div class="rec-section-title">Cagematch Tournament Ratings (Modern Era)</div>
+    <div class="ratings-chart" id="ratings-chart"></div>
+  </div>
+  <div class="rec-section">
+    <div class="rec-section-title">Tournament Records</div>
+    <table class="rec-table" id="rec-table"></table>
+  </div>
+</div>
+
+</div>
+
+<script>
+const TOURNAMENTS = [
+  {y:1991,d:'1990s',winner:'Masahiro Chono',finalist:'Shinya Hashimoto',
+   blockA:{label:'Block A Winner',name:'Masahiro Chono',extra:'Unbeaten in block'},
+   blockB:{label:'Block B Winner',name:'Shinya Hashimoto',extra:''},
+   format:'Round-robin, 2×4',
+   routeA:'Chono went undefeated in Block A, defeating Vader and Riki Choshu.',
+   routeB:'Hashimoto topped Block B, dispatching the gaijin contenders.',
+   finalNote:'Chono submitted Hashimoto with the STF in the inaugural G1 final.',
+   significance:'The founding edition. Created specifically to make stars of Chono, Mutoh, and Hashimoto — the Three Musketeers.',
+   notable:'Masahiro Chono vs Shinya Hashimoto — First ever G1 Final',
+   notableDetail:'The birth of their defining 90s rivalry',
+   badges:['firsttime'],
+   cm:null, cmRating:null},
+
+  {y:1992,d:'1990s',winner:'Masahiro Chono',finalist:'Scott Norton',
+   blockA:{label:'Semi-finalist',name:'Masahiro Chono',extra:'Bracket format'},
+   blockB:{label:'Semi-finalist',name:'Scott Norton',extra:'First gaijin finalist'},
+   format:'Single-elimination, 16-man (NWA title on the line)',
+   routeA:'Chono navigated the bracket in dominant fashion.',
+   routeB:'Norton was the first North American to reach a G1 final — not to be repeated until 2016.',
+   finalNote:'Chono defeated Norton to win both the G1 and the NWA World Heavyweight Championship.',
+   significance:'The only G1 that also crowned an NWA Champion. Back-to-back wins for Chono.',
+   notable:'Masahiro Chono vs Scott Norton — Final (NWA Title)',
+   notableDetail:'Only G1 final with a secondary championship on the line',
+   badges:['backtoback'],
+   cm:null, cmRating:null},
+
+  {y:1993,d:'1990s',winner:'Tatsumi Fujinami',finalist:'Keiji Mutoh',
+   blockA:{label:'Semi-finalist',name:'Tatsumi Fujinami',extra:'Bracket format'},
+   blockB:{label:'Semi-finalist',name:'Keiji Mutoh',extra:''},
+   format:'Single-elimination, 16-man',
+   routeA:'Fujinami, a legend already in his 40s, powered through the bracket.',
+   routeB:'Mutoh was the clear favourite and crowd favourite heading into the final.',
+   finalNote:'Fujinami defeated Mutoh — still one of the most surprising G1 results ever.',
+   significance:'The only G1 won by a wrestler from the "founding generation." Signalled NJPW not yet fully committed to its new stars.',
+   notable:'Tatsumi Fujinami vs Keiji Mutoh — Final',
+   notableDetail:'The most unexpected G1 result of the decade',
+   badges:[],
+   cm:null, cmRating:null},
+
+  {y:1994,d:'1990s',winner:'Masahiro Chono',finalist:'Shinya Hashimoto',
+   blockA:{label:'Block A Winner',name:'Masahiro Chono',extra:''},
+   blockB:{label:'Block B Winner',name:'Shinya Hashimoto',extra:''},
+   format:'Round-robin, 2 blocks',
+   routeA:'Chono topped his block without dropping a fall.',
+   routeB:'Hashimoto powered through Block B on his way to a second final.',
+   finalNote:'A rematch of 1991 — Chono again submitted Hashimoto with the STF for his third title.',
+   significance:'Third G1 for Chono. The Chono–Hashimoto rivalry becomes the defining matchup of the decade.',
+   notable:'Masahiro Chono vs Shinya Hashimoto — Final (rematch)',
+   notableDetail:'The rivalry deepens; Hashimoto reaches his second final',
+   badges:[],
+   cm:null, cmRating:null},
+
+  {y:1995,d:'1990s',winner:'Keiji Mutoh',finalist:'Hiroshi Hase',
+   blockA:{label:'Block A Winner',name:'Keiji Mutoh',extra:'IWGP Champion entering'},
+   blockB:{label:'Block B Winner',name:'Hiroshi Hase',extra:''},
+   format:'Round-robin, 2 blocks; top 2 each advanced',
+   routeA:'Mutoh entered as IWGP Heavyweight Champion and won his block undefeated.',
+   routeB:'Hase was a physical, consistent performer who topped his block.',
+   finalNote:'Mutoh defeated Hase — the only time (until Sasaki 2000) a reigning champion would win the G1.',
+   significance:'One of only two times in G1 history a reigning IWGP Champion won the tournament.',
+   notable:'Keiji Mutoh vs Hiroshi Hase — Final',
+   notableDetail:'Champion vs contender — the rarest G1 dynamic',
+   badges:['champ'],
+   cm:null, cmRating:null},
+
+  {y:1996,d:'1990s',winner:'Riki Choshu',finalist:'Hiroyoshi Tenzan',
+   blockA:{label:'Block A Winner',name:'Riki Choshu',extra:'Zero losses, including finals'},
+   blockB:{label:'Block B Winner',name:'Hiroyoshi Tenzan',extra:''},
+   format:'Round-robin with block finals',
+   routeA:'Choshu went UNDEFEATED across every match — block play AND the finals. A perfect record.',
+   routeB:'Tenzan made his first G1 final, hinting at future dominance.',
+   finalNote:'Choshu defeated Tenzan — the only man in G1 history to finish with a flawless record including all finals bouts.',
+   significance:'The statistically most dominant G1 performance ever. Choshu at 45, undefeated in every match.',
+   notable:'Riki Choshu — Perfect Run (entire tournament)',
+   notableDetail:'Only perfect record in G1 history — not a single fall dropped',
+   badges:[],
+   cm:null, cmRating:null},
+
+  {y:1997,d:'1990s',winner:'Kensuke Sasaki',finalist:'Masahiro Chono',
+   blockA:{label:'Semi-finalist',name:'Kensuke Sasaki',extra:'Bracket format'},
+   blockB:{label:'Semi-finalist',name:'Masahiro Chono',extra:'4th final appearance'},
+   format:'Single-elimination, 16-man bracket',
+   routeA:'Sasaki\'s raw power saw him through the bracket.',
+   routeB:'Chono reached his fourth G1 final — setting a record for final appearances at the time.',
+   finalNote:'Sasaki defeated Chono in the final for his first G1 title.',
+   significance:'Sasaki\'s first G1. Chono reached a record fourth final.',
+   notable:'Kensuke Sasaki vs Masahiro Chono — Final',
+   notableDetail:'Sasaki ends Chono\'s streak of final appearances',
+   badges:['firsttime'],
+   cm:null, cmRating:null},
+
+  {y:1998,d:'1990s',winner:'Shinya Hashimoto',finalist:'Manabu Nakanishi',
+   blockA:{label:'Semi-finalist',name:'Shinya Hashimoto',extra:'Third G1 final'},
+   blockB:{label:'Semi-finalist',name:'Manabu Nakanishi',extra:'First G1 final'},
+   format:'Single-elimination, 16-man (last bracket format ever)',
+   routeA:'Hashimoto, after two runner-up finishes in \'91 and \'94, finally got his win.',
+   routeB:'Nakanishi\'s brute strength got him to the final in his debut G1 appearance.',
+   finalNote:'Hashimoto defeated Nakanishi decisively. A long-overdue coronation.',
+   significance:'Hashimoto\'s only G1 win. The last single-elimination tournament — round-robin became permanent from 1999.',
+   notable:'Shinya Hashimoto vs Manabu Nakanishi — Final',
+   notableDetail:'A long-deserved win after two runner-up heartbreaks',
+   badges:[],
+   cm:null, cmRating:null},
+
+  {y:1999,d:'1990s',winner:'Manabu Nakanishi',finalist:'Keiji Mutoh',
+   blockA:{label:'Block A Winner',name:'Manabu Nakanishi',extra:''},
+   blockB:{label:'Block B Winner',name:'Keiji Mutoh',extra:'IWGP Champion'},
+   format:'Round-robin, 4 blocks of 5; block winners to semis',
+   routeA:'Nakanishi won his block on points.',
+   routeB:'Mutoh (champion) won his block and reached his second championship-held G1 final.',
+   finalNote:'UPSET — Nakanishi defeated champion Mutoh. First time a reigning IWGP Champion lost a G1 final.',
+   significance:'The decade\'s biggest upset. Nakanishi\'s sole G1 win. Mutoh losing as champion raised major questions.',
+   notable:'Manabu Nakanishi vs Keiji Mutoh — Final (UPSET)',
+   notableDetail:'Champion Mutoh falls — first ever champion defeated in a G1 final',
+   badges:['firsttime'],
+   cm:null, cmRating:null},
+
+  {y:2000,d:'2000s',winner:'Kensuke Sasaki',finalist:'Yuji Nagata',
+   blockA:{label:'Block A Winner',name:'Kensuke Sasaki',extra:'IWGP Champion'},
+   blockB:{label:'Block B Winner',name:'Yuji Nagata',extra:''},
+   format:'Round-robin, 4 blocks of 5; block winners to semis',
+   routeA:'Sasaki entered as champion and topped his block.',
+   routeB:'Nagata\'s breakout year — first G1 final appearance.',
+   finalNote:'Sasaki defeated Nagata for his second G1 and the second champion-wins-the-G1 result ever.',
+   significance:'Only two wrestlers have won the G1 while IWGP Champion: Mutoh (1995) and Sasaki (2000).',
+   notable:'Kensuke Sasaki vs Yuji Nagata — Final',
+   notableDetail:'Nagata\'s first final — a preview of his inevitable rise',
+   badges:['champ'],
+   cm:null, cmRating:null},
+
+  {y:2001,d:'2000s',winner:'Yuji Nagata',finalist:'Kensuke Sasaki',
+   blockA:{label:'Block A Winner',name:'Yuji Nagata',extra:''},
+   blockB:{label:'Block B Winner',name:'Kensuke Sasaki',extra:''},
+   format:'Round-robin, 2 blocks of 6; top 2 to semi-finals',
+   routeA:'Nagata topped Block A and got his revenge rematch with Sasaki.',
+   routeB:'Sasaki came through Block B seeking a third G1.',
+   finalNote:'Nagata defeated Sasaki with the Nagata Lock submission. The revenge was complete.',
+   significance:'Nagata\'s first G1 win — the springboard to finally capturing the IWGP title.',
+   notable:'Yuji Nagata vs Kensuke Sasaki — Final (rematch)',
+   notableDetail:'Revenge served via submission — Nagata arrives as a main eventer',
+   badges:['firsttime'],
+   cm:null, cmRating:null},
+
+  {y:2002,d:'2000s',winner:'Masahiro Chono',finalist:'Yuji Nagata',
+   blockA:{label:'Block A Winner',name:'Masahiro Chono',extra:'Age 39'},
+   blockB:{label:'Block B Winner',name:'Yuji Nagata',extra:'Defending winner'},
+   format:'Round-robin, 2 blocks; top 2 to semi-finals',
+   routeA:'Chono, 39 years old, topped his block in a remarkable veteran run.',
+   routeB:'Nagata defending his title as the previous winner won Block B.',
+   finalNote:'Chono defeated Nagata for an all-time record fourth G1 title at age 39.',
+   significance:'Chono\'s fourth G1 at nearly 40. The veteran comeback story of his career.',
+   notable:'Masahiro Chono vs Yuji Nagata — Final',
+   notableDetail:'Chono ties his own era record with a fourth G1 at 39',
+   badges:[],
+   cm:null, cmRating:null},
+
+  {y:2003,d:'2000s',winner:'Hiroyoshi Tenzan',finalist:'Yoshihiro Takayama',
+   blockA:{label:'Block A Winner',name:'Hiroyoshi Tenzan',extra:''},
+   blockB:{label:'Block B Winner',name:'Yoshihiro Takayama',extra:'Cross-promotion invitee'},
+   format:'Round-robin, 2 blocks of 6; top 2 to semis',
+   routeA:'Tenzan won his block in his first G1 final run.',
+   routeB:'Takayama (freelancer) devastated opponents with his MMA-influenced style.',
+   finalNote:'Tenzan defeated Takayama in a hard-hitting final to claim his first G1.',
+   significance:'Tenzan\'s first G1. He would go on to three titles in four years — an unexpected dynasty.',
+   notable:'Hiroyoshi Tenzan vs Yoshihiro Takayama — Final',
+   notableDetail:'Physicality vs technique — cross-promotional drama',
+   badges:['firsttime'],
+   cm:null, cmRating:null},
+
+  {y:2004,d:'2000s',winner:'Hiroyoshi Tenzan',finalist:'Hiroshi Tanahashi',
+   blockA:{label:'Block Winner',name:'Hiroyoshi Tenzan',extra:'Defending champion'},
+   blockB:{label:'Block Winner',name:'Hiroshi Tanahashi',extra:'First G1 final, age 28'},
+   format:'2-block, 16-man; complex multi-round playoff',
+   routeA:'Tenzan won his block seeking back-to-back titles.',
+   routeB:'Tanahashi — 28 and clearly being elevated — made his first G1 final.',
+   finalNote:'Tenzan defeated Tanahashi in what is now seen as a pivotal passing-of-the-torch moment.',
+   significance:'Tenzan\'s back-to-back. But Tanahashi\'s first final was the more historically important story.',
+   notable:'Hiroyoshi Tenzan vs Hiroshi Tanahashi — Final',
+   notableDetail:'Tanahashi\'s first final — a preview of his coming decade of dominance',
+   badges:['backtoback'],
+   cm:null, cmRating:null},
+
+  {y:2005,d:'2000s',winner:'Masahiro Chono',finalist:'Shinsuke Nakamura',
+   blockA:{label:'Block A Winner',name:'Masahiro Chono',extra:'Age 42'},
+   blockB:{label:'Block B Winner',name:'Shinsuke Nakamura',extra:'Age 25, first major final'},
+   format:'Round-robin, 2 blocks; semi-finals',
+   routeA:'Chono, 42, topped Block A in a legendary veteran run.',
+   routeB:'Nakamura, 15 years Chono\'s junior, won Block B and announced himself to the main event.',
+   finalNote:'Chono defeated Nakamura for his FIFTH and FINAL G1 — the all-time record that still stands.',
+   significance:'Chono\'s record fifth G1. The last significant win of his career. Nakamura\'s run announced him as the next face of NJPW.',
+   notable:'Masahiro Chono vs Shinsuke Nakamura — Final (record 5th win)',
+   notableDetail:'The final that set the all-time G1 wins record — still unbroken',
+   badges:[],
+   cm:null, cmRating:null},
+
+  {y:2006,d:'2000s',winner:'Hiroyoshi Tenzan',finalist:'Giant Bernard',
+   blockA:{label:'Block A Winner',name:'Giant Bernard',extra:'North American finalist'},
+   blockB:{label:'Block B Winner',name:'Hiroyoshi Tenzan',extra:''},
+   format:'Round-robin, 2 blocks; semi-finals',
+   routeA:'Giant Bernard (A-Train/Tensai) powered to the final — a rare gaijin run.',
+   routeB:'Tenzan won Block B seeking his third title.',
+   finalNote:'Tenzan defeated Bernard. Third G1, undefeated in finals again.',
+   significance:'Tenzan\'s third G1. Bernard\'s run was the last North American in a G1 final before Omega in 2016.',
+   notable:'Hiroyoshi Tenzan vs Giant Bernard — Final',
+   notableDetail:'A gaijin finalist — rare before the boom era. Next: Omega, 2016.',
+   badges:[],
+   cm:null, cmRating:null},
+
+  {y:2007,d:'2000s',winner:'Hiroshi Tanahashi',finalist:'Yuji Nagata',
+   blockA:{label:'Block A Winner',name:'Hiroshi Tanahashi',extra:''},
+   blockB:{label:'Block B Winner',name:'Yuji Nagata',extra:'IWGP Champion, 3rd final'},
+   format:'Round-robin, 2 blocks; semi-finals',
+   routeA:'Tanahashi topped his block on the way to his first G1 final win.',
+   routeB:'Nagata as champion made his third G1 final from Block B.',
+   finalNote:'Tanahashi defeated champion Nagata — the Ace era begins.',
+   significance:'The beginning of the Tanahashi era. His G1 win led directly to the IWGP title and NJPW\'s global expansion.',
+   notable:'Hiroshi Tanahashi vs Yuji Nagata — Final (champion vs challenger)',
+   notableDetail:'The moment the Ace took control of New Japan\'s future',
+   badges:['firsttime'],
+   cm:null, cmRating:null},
+
+  {y:2008,d:'2000s',winner:'Hirooki Goto',finalist:'Shinsuke Nakamura',
+   blockA:{label:'Block A Winner',name:'Shinsuke Nakamura',extra:''},
+   blockB:{label:'Block B Winner',name:'Hirooki Goto',extra:'First G1 appearance'},
+   format:'Round-robin, 2 blocks (champion Mutoh did not enter)',
+   routeA:'Nakamura was expected to win and came through Block A as the favourite.',
+   routeB:'Goto won Block B in his FIRST EVER G1 appearance.',
+   finalNote:'Goto defeated Nakamura in a major upset — one of only three men to win the G1 on their debut.',
+   significance:'Goto wins on his first attempt. Only Chono (1991) and Okada (2012) have matched this.',
+   notable:'Hirooki Goto vs Shinsuke Nakamura — Final',
+   notableDetail:'First-G1 win — the rarest achievement in tournament history',
+   badges:['firsttime'],
+   cm:null, cmRating:null},
+
+  {y:2009,d:'2000s',winner:'Togi Makabe',finalist:'Shinsuke Nakamura',
+   blockA:{label:'Block A Winner',name:'Togi Makabe',extra:''},
+   blockB:{label:'Block B Winner',name:'Shinsuke Nakamura',extra:'2nd straight final'},
+   format:'Round-robin, 2 blocks',
+   routeA:'Makabe won Block A at the peak of his "King Kong" babyface run.',
+   routeB:'Nakamura reached his second straight final — building toward inevitable coronation.',
+   finalNote:'Makabe defeated Nakamura via lariat/powerbomb combo for his only career G1.',
+   significance:'Makabe\'s sole G1. Nakamura\'s back-to-back runner-up built toward his eventual 2011 win.',
+   notable:'Togi Makabe vs Shinsuke Nakamura — Final',
+   notableDetail:'Makabe\'s peak moment; Nakamura building toward his inevitable crowning',
+   badges:['firsttime'],
+   cm:null, cmRating:null},
+
+  {y:2010,d:'2010s',winner:'Satoshi Kojima',finalist:'Hiroshi Tanahashi',
+   blockA:{label:'Block A Winner',name:'Hiroshi Tanahashi',extra:'Expected to win'},
+   blockB:{label:'Block B Winner',name:'Satoshi Kojima',extra:'Non-NJPW contract'},
+   format:'Round-robin, 2 blocks of 10',
+   routeA:'Tanahashi topped Block A as the clear favourite.',
+   routeB:'Kojima, technically a freelancer working both NJPW and NOAH, won Block B.',
+   finalNote:'UPSET — Kojima defeated Tanahashi in one of the era\'s most overlooked results.',
+   significance:'The only G1 won by a wrestler not under full NJPW contract in the modern era.',
+   notable:'Satoshi Kojima vs Hiroshi Tanahashi — Final (UPSET)',
+   notableDetail:'The only non-contracted winner of the modern era',
+   badges:['firsttime'],
+   cm:null, cmRating:null},
+
+  {y:2011,d:'2010s',winner:'Shinsuke Nakamura',finalist:'Hiroshi Tanahashi',
+   blockA:{label:'Block A Winner',name:'Shinsuke Nakamura',extra:''},
+   blockB:{label:'Block B Winner',name:'Hiroshi Tanahashi',extra:''},
+   format:'Round-robin, 2 blocks of 10',
+   routeA:'Nakamura topped Block A in a dominant run — the coronation felt inevitable.',
+   routeB:'Tanahashi made his second G1 final in three years.',
+   finalNote:'Nakamura finally won the G1 after runner-up finishes in 2008 and 2009. Equal parts technical showcase and emotional moment.',
+   significance:'Nakamura\'s only G1 despite four final appearances. The King of Strong Style had arrived.',
+   notable:'Shinsuke Nakamura vs Hiroshi Tanahashi — Final',
+   notableDetail:'Three years in the making — Nakamura\'s long-awaited coronation',
+   badges:['firsttime'],
+   cm:null, cmRating:null},
+
+  {y:2012,d:'2010s',winner:'Kazuchika Okada',finalist:'Karl Anderson',
+   blockA:{label:'Block A Winner',name:'Kazuchika Okada',extra:'Age 24, first G1'},
+   blockB:{label:'Block B Winner',name:'Karl Anderson',extra:'First gaijin finalist since \'92'},
+   format:'Round-robin, 2 blocks of 9',
+   routeA:'Okada, 24, won Block A in his FIRST G1 appearance — the youngest ever.',
+   routeB:'Anderson was the first North American in a G1 final since Rick Rude in 1992.',
+   finalNote:'Okada defeated Anderson to become the youngest G1 winner in history. First year of the Wrestle Kingdom title-shot contract.',
+   significance:'The watershed moment. Okada\'s first of four G1 wins. The Wrestle Kingdom contract changed everything.',
+   notable:'Kazuchika Okada vs Karl Anderson — Final (first Wrestle Kingdom contract)',
+   notableDetail:'The G1 trophy gains its greatest value — a guaranteed Tokyo Dome main event',
+   badges:['firsttime','classic'],
+   cm:'https://www.cagematch.net/?id=26&nr=2274', cmRating:8.5},
+
+  {y:2013,d:'2010s',winner:'Tetsuya Naito',finalist:'Hiroshi Tanahashi',
+   blockA:{label:'Block A Winner',name:'Hiroshi Tanahashi',extra:''},
+   blockB:{label:'Block B Winner',name:'Tetsuya Naito',extra:''},
+   format:'Round-robin, 2 blocks of 10 (first iPPV broadcast)',
+   routeA:'Tanahashi topped Block A. NJPW broadcast all nine shows live on iPPV for the first time.',
+   routeB:'Naito won Block B and approached the final with a picture-frame certificate case — hinting at his future persona.',
+   finalNote:'Naito defeated Tanahashi. He famously displayed the title-shot certificate in a picture frame rather than a briefcase.',
+   significance:'Naito\'s first G1. The controversial fan vote denying him WK main event radicalised his character into "Los Ingobernables."',
+   notable:'Katsuyori Shibata vs Tomohiro Ishii (Block match)',
+   notableDetail:'First ★★★★★ G1 match in 22 years — 12 brutal minutes, rated 6★ by Meltzer',
+   badges:['firsttime','classic'],
+   cm:'https://www.cagematch.net/?id=26&nr=2680', cmRating:9.5},
+
+  {y:2014,d:'2010s',winner:'Kazuchika Okada',finalist:'Tomohiro Ishii',
+   blockA:{label:'Block A Winner',name:'Kazuchika Okada',extra:'Near-perfect block record'},
+   blockB:{label:'Block B Winner',name:'Tomohiro Ishii',extra:'Fan-favourite underdog run'},
+   format:'Round-robin, 2 blocks of 11 (22 wrestlers — then-largest field)',
+   routeA:'Okada dominated Block A.',
+   routeB:'Ishii\'s block run — described by many as the best in G1 history — defeated Tanahashi and nearly everyone en route.',
+   finalNote:'Okada defeated Ishii in a final where the crowd was genuinely split. Ishii\'s run elevated him permanently.',
+   significance:'Okada\'s second G1. Ishii\'s "greatest losing run" — a defining G1 legacy despite not winning.',
+   notable:'Hiroshi Tanahashi vs Tomohiro Ishii (Block A match)',
+   notableDetail:'Widely rated match of the year — Ishii\'s most celebrated block match',
+   badges:['classic'],
+   cm:'https://www.cagematch.net/?id=26&nr=3116', cmRating:9.2},
+
+  {y:2015,d:'2010s',winner:'Hiroshi Tanahashi',finalist:'Shinsuke Nakamura',
+   blockA:{label:'Block A Winner',name:'Hiroshi Tanahashi',extra:''},
+   blockB:{label:'Block B Winner',name:'Shinsuke Nakamura',extra:'4th final appearance'},
+   format:'Round-robin, 2 blocks of 10 — FIRST 4-week format, 19 shows',
+   routeA:'Tanahashi topped Block A. The extended format debuted — fewer matches per show, more rest time.',
+   routeB:'Nakamura won Block B, making his fourth and final G1 final appearance.',
+   finalNote:'Tanahashi defeated Nakamura in a 30+ minute classic — frequently rated the best G1 final ever by fans.',
+   significance:'Often rated the match of the year. Tanahashi\'s third G1. Both men visibly in the twilight of their peak — they produced an all-time classic.',
+   notable:'Hiroshi Tanahashi vs Shinsuke Nakamura — Final',
+   notableDetail:'Widely considered the greatest G1 final ever; Nakamura\'s final appearance',
+   badges:['classic'],
+   cm:'https://www.cagematch.net/?id=26&nr=3482', cmRating:9.6},
+
+  {y:2016,d:'2010s',winner:'Kenny Omega',finalist:'Hirooki Goto',
+   blockA:{label:'Block A Winner',name:'Hirooki Goto',extra:''},
+   blockB:{label:'Block B Winner',name:'Kenny Omega',extra:'Defeated Okada, Tanahashi & Naito in block'},
+   format:'Round-robin, 2 blocks of 10',
+   routeA:'Goto topped Block A on points.',
+   routeB:'Omega\'s Block B run — defeating Okada, Tanahashi, AND Naito — is one of the greatest block sweeps in history.',
+   finalNote:'Omega defeated Goto. Post-match, he refused to wave the G1 flag and waved the Bullet Club flag instead.',
+   significance:'HISTORY. Omega became the FIRST non-Japanese G1 winner. His block run remains one of the best ever.',
+   notable:'Kenny Omega vs Tetsuya Naito (Block B — "The Match That Changed Everything")',
+   notableDetail:'★★★★★ — rated by Cagematch fans as one of the greatest G1 matches ever (9.79)',
+   badges:['gaijin','firsttime','classic'],
+   cm:'https://www.cagematch.net/?id=26&nr=3995', cmRating:9.7},
+
+  {y:2017,d:'2010s',winner:'Tetsuya Naito',finalist:'Kenny Omega',
+   blockA:{label:'Block A Winner',name:'Tetsuya Naito',extra:''},
+   blockB:{label:'Block B Winner',name:'Kenny Omega',extra:'Defending finalist'},
+   format:'Round-robin, 2 blocks of 10',
+   routeA:'Naito won Block A. The crowd was split between the two biggest non-Okada stars in the world.',
+   routeB:'Omega (defending finalist) won Block B — a rematch final that delivered.',
+   finalNote:'Naito defeated Omega in a match most fans rated as the best G1 final ever (matching or beating 2015).',
+   significance:'Naito\'s second G1. The 2017 final — Omega vs Naito — is widely rated the best in tournament history.',
+   notable:'Tetsuya Naito vs Kenny Omega — Final (★★★★★)',
+   notableDetail:'Arguably the greatest G1 final ever — rematch with the highest stakes',
+   badges:['classic'],
+   cm:'https://www.cagematch.net/?id=26&nr=516', cmRating:9.8},
+
+  {y:2018,d:'2010s',winner:'Hiroshi Tanahashi',finalist:'Kota Ibushi',
+   blockA:{label:'Block A Winner',name:'Hiroshi Tanahashi',extra:''},
+   blockB:{label:'Block B Winner',name:'Kota Ibushi',extra:'First full-time NJPW contract year'},
+   format:'Round-robin, 2 blocks of 10',
+   routeA:'Tanahashi won Block A — a "teacher vs student" narrative with his former tag partner.',
+   routeB:'Ibushi\'s first G1 final in his debut contract year. Ibushi–Omega in the semi-final was rated ★★★★★½.',
+   finalNote:'Tanahashi defeated Ibushi in a 35-minute epic — the second longest final in history. An all-time classic.',
+   significance:'Tanahashi\'s third G1. Ibushi begins four consecutive final appearances (record). Widely rated the best match of 2018.',
+   notable:'Hiroshi Tanahashi vs Kota Ibushi — Final (35 minutes)',
+   notableDetail:'★★★★★½ — highest-rated G1 final by both Meltzer and Cagematch voters',
+   badges:['classic'],
+   cm:'https://www.cagematch.net/?id=26&nr=5109', cmRating:9.5},
+
+  {y:2019,d:'2010s',winner:'Kota Ibushi',finalist:'Jay White',
+   blockA:{label:'Block A Winner',name:'Kota Ibushi',extra:''},
+   blockB:{label:'Block B Winner',name:'Jay White',extra:'Defeated Okada in block'},
+   format:'Round-robin, 2 blocks of 10 (FIRST G1 OUTSIDE JAPAN — Dallas opener)',
+   routeA:'Ibushi won Block A. Moxley, Cobb, KENTA and Shingo all debuted in this G1.',
+   routeB:'Jay White defeated Okada (who was also in the block) on the way to his first major G1 final.',
+   finalNote:'Ibushi defeated White at Nippon Budokan for his first G1 title.',
+   significance:'Ibushi\'s first G1. The Dallas opener marked NJPW\'s biggest push for the US market. Jay White established as a villain.',
+   notable:'Kazuchika Okada vs Will Ospreay (Block A match)',
+   notableDetail:'★★★★★ Meltzer — one of the greatest matches in G1 history',
+   badges:['firsttime','classic'],
+   cm:'https://www.cagematch.net/?id=26&nr=5765', cmRating:9.5},
+
+  {y:2020,d:'2020s',winner:'Kota Ibushi',finalist:'SANADA',
+   blockA:{label:'Block A Winner',name:'SANADA',extra:'Breakthrough run'},
+   blockB:{label:'Block B Winner',name:'Kota Ibushi',extra:'Back-to-back'},
+   format:'Round-robin, 2 blocks of 10 (held Sep–Oct — TOKYO OLYMPICS displacement)',
+   routeA:'SANADA topped Block A in his most dominant G1 run — 3rd final appearance becomes first.',
+   routeB:'Ibushi won Block B seeking back-to-back titles. An 18-second Goto–Yano match set a speed record.',
+   finalNote:'Ibushi defeated SANADA in 35:12 — the longest G1 final in history. Jay White later stole the briefcase at Power Struggle.',
+   significance:'Back-to-back for Ibushi. His record 4th consecutive final. The briefcase theft by White was the only time that\'s ever happened.',
+   notable:'Kota Ibushi vs SANADA — Final (35:12 — longest ever)',
+   notableDetail:'The longest G1 final in history — and the briefcase was stolen afterward',
+   badges:['backtoback','classic'],
+   cm:'https://www.cagematch.net/?id=26&nr=6565', cmRating:8.2},
+
+  {y:2021,d:'2020s',winner:'Kazuchika Okada',finalist:'Kota Ibushi',
+   blockA:{label:'Block A Winner',name:'Kazuchika Okada',extra:''},
+   blockB:{label:'Block B Winner',name:'Kota Ibushi',extra:'4th straight final — record'},
+   format:'Round-robin, 2 blocks of 10 (2nd consecutive autumn G1; Olympics postponed)',
+   routeA:'Okada topped Block A. ZSJ had a remarkable run defeating three consecutive top Block A wrestlers.',
+   routeB:'Ibushi won Block B for his record fourth straight final appearance.',
+   finalNote:'Okada defeated Ibushi. Instead of a briefcase, Okada was presented with the decommissioned IWGP Heavyweight belt — a farewell to an era.',
+   significance:'Okada\'s third G1. The decommissioned belt presentation was one of the most emotional recent G1 moments.',
+   notable:'Shingo Takagi vs Tomohiro Ishii (Night 1 Block match)',
+   notableDetail:'★★★★¾ — match of the night on a stacked opening night',
+   badges:['classic'],
+   cm:'https://www.cagematch.net/?id=26&nr=7203', cmRating:6.8},
+
+  {y:2022,d:'2020s',winner:'Kazuchika Okada',finalist:'Will Ospreay',
+   blockA:{label:'Block C Winner',name:'Kazuchika Okada',extra:'16 block pts — all-time record'},
+   blockB:{label:'Block D Winner',name:'Will Ospreay',extra:'Semifinal: def. Naito'},
+   format:'Round-robin, 4 blocks of 7 (28 wrestlers — then-largest field ever)',
+   routeA:'Okada earned 16 block points — tied for the highest ever in any block format.',
+   routeB:'Ospreay won Block D and defeated Naito in the semifinals before pushing Okada to the limit.',
+   finalNote:'Okada defeated Ospreay in a match widely rated ★★★★★ — Okada\'s record-tying fourth G1 win. Ospreay was in tears leaving the ring.',
+   significance:'Okada ties Chono\'s record. Ospreay\'s runner-up elevated him to future main event status.',
+   notable:'Kazuchika Okada vs Will Ospreay — Final (★★★★★)',
+   notableDetail:'The match of 2022 — Ospreay in tears, Okada ties the all-time record',
+   badges:['backtoback','classic'],
+   cm:'https://www.cagematch.net/?id=26&nr=7625', cmRating:8.5},
+
+  {y:2023,d:'2020s',winner:'SANADA',finalist:'Hiroshi Tanahashi',
+   blockA:{label:'Block A Winner',name:'SANADA',extra:'Already IWGP Champion'},
+   blockB:{label:'Block C/D run',name:'Hiroshi Tanahashi',extra:'Late 30s — remarkable run'},
+   format:'Round-robin, 4 blocks of 8 (32 wrestlers — LARGEST FIELD EVER)',
+   routeA:'SANADA topped his block — a rare entering-champion win scenario.',
+   routeB:'Tanahashi, in his late 30s, made a remarkable run to his third G1 final.',
+   finalNote:'SANADA finally won his G1 after years as a near-miss performer. A true generational handoff.',
+   significance:'SANADA\'s long-overdue first G1. He was already IWGP Champion — one of the rarest combinations. Largest field in history: 32 wrestlers.',
+   notable:'SANADA vs Hiroshi Tanahashi — Final (generational handoff)',
+   notableDetail:'The younger generation officially takes the torch from the Ace',
+   badges:['firsttime'],
+   cm:'https://www.cagematch.net/?id=26&nr=8333', cmRating:7.0},
+
+  {y:2024,d:'2020s',winner:'Zack Sabre Jr.',finalist:'Tetsuya Naito',
+   blockA:{label:'Block A Winner',name:'Zack Sabre Jr.',extra:''},
+   blockB:{label:'Block B Winner',name:'Tetsuya Naito',extra:'4th final appearance'},
+   format:'Round-robin, 2 blocks of 10 (returned to 20-man format)',
+   routeA:'ZSJ won his block with a technically flawless submission-grappling run.',
+   routeB:'Naito (a veteran of multiple finals) came through Block B.',
+   finalNote:'ZSJ defeated Naito. Rather than waiting for Wrestle Kingdom, he cashed in at King of Pro-Wrestling in October — breaking a 12-year tradition.',
+   significance:'ZSJ\'s first G1. Second gaijin (British) to win. He broke the WK tradition by going to KOPW instead.',
+   notable:'Zack Sabre Jr. vs Tetsuya Naito — Final',
+   notableDetail:'ZSJ breaks the Wrestle Kingdom tradition — cashes in at KOPW instead',
+   badges:['gaijin','firsttime'],
+   cm:'https://www.cagematch.net/?id=26&nr=8933', cmRating:7.54},
+
+  {y:2025,d:'2020s',winner:'Konosuke Takeshita',finalist:'EVIL',
+   blockA:{label:'Block A Winner',name:'Konosuke Takeshita',extra:'Injured left knee throughout'},
+   blockB:{label:'Block B Winner',name:'EVIL',extra:'House of Torture interference'},
+   format:'Round-robin, 2 blocks of 10 + 6-man playoff (top 3 per block)',
+   routeA:'Takeshita (AEW-contracted) topped his block despite a left knee injury sustained early. Beat ZSJ in the semi-final.',
+   routeB:'EVIL won Block B with heavy House of Torture assistance. Narita and ZSJ had ringside confrontation before the final went clean.',
+   finalNote:'Takeshita defeated EVIL in 26:26 at Ariake Arena (6,870 fans). Takeshita was in tears: "I knew it. I\'m glad I became a professional wrestler."',
+   significance:'Second non-Japanese winner in G1 history after Kenny Omega (2016). The injured knee became the emotional thread of his run.',
+   notable:'Konosuke Takeshita vs EVIL — Final (26:26)',
+   notableDetail:'"I knew it. I\'m glad I became a professional wrestler." — Takeshita post-match',
+   badges:['gaijin'],
+   cm:'https://www.cagematch.net/en/?id=26&nr=9633', cmRating:6.06},
+];
+
+// Wins map
+const wins = {};
+TOURNAMENTS.forEach(t => wins[t.winner] = (wins[t.winner]||0)+1);
+
+// Dec year map
+const decOf = {};
+TOURNAMENTS.forEach(t => decOf[t.y] = t.d);
+
+function ratingColor(r) {
+  if (!r) return '#7a7a8a';
+  if (r >= 9.5) return '#f0cc40';
+  if (r >= 8.5) return '#3dd68c';
+  if (r >= 7.5) return '#5b9cf6';
+  if (r >= 6.5) return '#ff6b35';
+  return '#e8302a';
+}
+
+function ratingBarColor(r) {
+  if (!r) return '#333';
+  if (r >= 9) return '#f0cc40';
+  if (r >= 8) return '#3dd68c';
+  if (r >= 7) return '#5b9cf6';
+  return '#ff6b35';
+}
+
+function starsHTML(rating) {
+  if (!rating) return '';
+  const filled = Math.round(rating);
+  let h = '';
+  for (let i=0;i<10;i++) {
+    h += `<div class="star" style="background:${i < filled ? ratingColor(rating) : '#2a2a2e'}"></div>`;
+  }
+  return h;
+}
+
+function makeBracket(t) {
+  return `
+  <div class="bracket-wrap">
+    <div class="bracket-title">Path to the Final</div>
+    <div class="bracket">
+      <div class="b-col">
+        <div class="b-node">
+          <div class="b-node-label">${t.blockA.label}</div>
+          <div class="b-node-name">${t.blockA.name}</div>
+          ${t.blockA.extra ? `<div class="b-node-extra">${t.blockA.extra}</div>` : ''}
+        </div>
+        <div class="b-node">
+          <div class="b-node-label">${t.blockB.label}</div>
+          <div class="b-node-name">${t.blockB.name}</div>
+          ${t.blockB.extra ? `<div class="b-node-extra">${t.blockB.extra}</div>` : ''}
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;width:40px;align-self:stretch;">
+        <div style="flex:1;display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-end;">
+          <div style="width:40px;height:1px;background:var(--border2);"></div>
+          <div style="width:1px;height:50%;background:var(--border2);align-self:flex-end;"></div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-start;">
+          <div style="width:1px;height:50%;background:var(--border2);align-self:flex-end;"></div>
+          <div style="width:40px;height:1px;background:var(--border2);"></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 6px;">
+        <div class="b-final-label">Final</div>
+      </div>
+      <div style="display:flex;align-items:center;color:var(--border2);font-size:18px;padding:0 4px;">→</div>
+      <div class="b-node winner-node">
+        <div class="b-node-label">Winner</div>
+        <div class="b-node-name">${t.winner}</div>
+        <div class="b-node-extra">def. ${t.finalist}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function makeCard(t) {
+  const badgesHTML = (t.badges||[]).map(b => {
+    const map = {
+      gaijin:'<span class="badge badge-gaijin">First Gaijin</span>',
+      backtoback:'<span class="badge badge-backtoback">Back-to-Back</span>',
+      champ:'<span class="badge badge-champ">Reigning Champ Won</span>',
+      firsttime:'<span class="badge badge-firsttime">First-Time Winner</span>',
+      classic:'<span class="badge badge-classic">Classic Final</span>',
+    };
+    return map[b]||'';
+  }).join('');
+
+  const ratingHTML = t.cmRating
+    ? `<div class="rating-stars">${starsHTML(t.cmRating)}</div>
+       <span class="rating-val">${t.cmRating.toFixed(2)}</span>
+       <span class="rating-label">CAGEMATCH</span>`
+    : `<span class="rating-label" style="opacity:.4">No Cagematch rating found</span>`;
+
+  const cmLinkHTML = t.cm
+    ? `<a href="${t.cm}" target="_blank" class="cm-link">→ Cagematch</a>`
+    : '';
+
+  const div = document.createElement('div');
+  div.className = 'card';
+  div.setAttribute('data-dec', t.d);
+  div.setAttribute('data-year', t.y);
+  div.innerHTML = `
+    <div class="card-header" onclick="toggleCard(${t.y})">
+      <div class="card-year">${t.y}</div>
+      <div class="card-top">
+        <div class="card-winner">${t.winner}</div>
+        <div class="card-finalist"><span>def.</span> ${t.finalist}</div>
+        <div class="card-badges">${badgesHTML}</div>
+      </div>
+    </div>
+    <div class="card-rating-row">
+      ${ratingHTML}
+      ${cmLinkHTML}
+    </div>
+    <div class="card-detail">
+      ${makeBracket(t)}
+      <div class="route-info">
+        <div class="route-section">
+          <div class="route-section-label">Format</div>
+          <div class="route-section-text">${t.format}</div>
+        </div>
+        <div class="route-section">
+          <div class="route-section-label">The Final</div>
+          <div class="route-section-text">${t.finalNote}</div>
+        </div>
+        <div class="route-section">
+          <div class="route-section-label">${t.blockA.label} route</div>
+          <div class="route-section-text">${t.routeA}</div>
+        </div>
+        <div class="route-section">
+          <div class="route-section-label">${t.blockB.label} route</div>
+          <div class="route-section-text">${t.routeB}</div>
+        </div>
+        <div class="route-section full-width">
+          <div class="route-section-label">Why it matters</div>
+          <div class="route-section-text">${t.significance}</div>
+        </div>
+      </div>
+      <div class="notable-match">
+        <div class="nm-icon">★</div>
+        <div class="nm-text">
+          <div class="nm-label">Notable match</div>
+          <div class="nm-match">${t.notable}</div>
+          <div class="nm-detail">${t.notableDetail}</div>
+        </div>
+      </div>
+    </div>`;
+  return div;
+}
+
+let currentDec = 'all';
+let expandedYear = null;
+
+function toggleCard(year) {
+  const card = document.querySelector(`.card[data-year="${year}"]`);
+  if (!card) return;
+  const wasExpanded = card.classList.contains('expanded');
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('expanded'));
+  if (!wasExpanded) {
+    card.classList.add('expanded');
+    expandedYear = year;
+    setTimeout(() => card.scrollIntoView({behavior:'smooth', block:'nearest'}), 50);
+  } else {
+    expandedYear = null;
+  }
+}
+
+function showDec(dec) {
+  currentDec = dec;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.dec === dec));
+  document.getElementById('main-grid').style.display = dec === 'records' ? 'none' : 'block';
+  document.getElementById('records-page').classList.toggle('visible', dec === 'records');
+
+  if (dec === 'records') return;
+
+  const grid = document.getElementById('main-grid');
+  grid.innerHTML = '';
+
+  const decades = dec === 'all' ? ['1990s','2000s','2010s','2020s'] : [dec];
+  const decLabels = {
+    '1990s': { label: '1990s', cls: 'd90s', desc: 'The Founding Era · The Three Musketeers · Chono\'s Dynasty (9 tournaments)' },
+    '2000s': { label: '2000s', cls: 'd00s', desc: 'The Transition Era · Tenzan\'s Rise · Tanahashi\'s Arrival (10 tournaments)' },
+    '2010s': { label: '2010s', cls: 'd10s', desc: 'The Global Boom · Okada vs. Tanahashi · The Gaijin Breakthrough (10 tournaments)' },
+    '2020s': { label: '2020s', cls: 'd20s', desc: 'The New Guard · Post-Pandemic · A Second Gaijin Champion (6 tournaments so far)' },
+  };
+
+  decades.forEach(d => {
+    const section = document.createElement('div');
+    section.className = 'decade-section';
+
+    const hdr = document.createElement('div');
+    hdr.className = 'decade-header visible';
+    const info = decLabels[d];
+    hdr.innerHTML = `<div class="decade-label ${info.cls}">${info.label}</div><div class="decade-desc">${info.desc}</div>`;
+    section.appendChild(hdr);
+
+    const g = document.createElement('div');
+    g.className = 'editions-grid';
+    TOURNAMENTS.filter(t => t.d === d).forEach(t => g.appendChild(makeCard(t)));
+    section.appendChild(g);
+    grid.appendChild(section);
+  });
+}
+
+// Leaderboard
+function buildLeaderboard() {
+  const sorted = Object.entries(wins).sort((a,b) => b[1]-a[1] || a[0].localeCompare(b[0]));
+  const el = document.getElementById('leaderboard');
+  sorted.forEach(([name, w], i) => {
+    const yrs = TOURNAMENTS.filter(t=>t.winner===name).map(t=>({y:t.y,d:t.d}));
+    const yrsHTML = yrs.map(({y,d}) => `<span class="yr-chip" data-dec="${d}">${y}</span>`).join('');
+    const wClass = i===0 ? 'top1' : i===1 ? 'top2' : i===2 ? 'top3' : '';
+    el.innerHTML += `<div class="lb-row">
+      <div class="lb-rank">${i+1}</div>
+      <div class="lb-name">${name}</div>
+      <div class="lb-wins ${wClass}">${w}</div>
+      <div class="lb-years">${yrsHTML}</div>
+    </div>`;
+  });
+}
+
+// Ratings chart
+function buildRatingsChart() {
+  const rated = TOURNAMENTS.filter(t => t.cmRating).sort((a,b)=>a.y-b.y);
+  const max = 10;
+  let html = '';
+  rated.forEach(t => {
+    const pct = Math.round((t.cmRating / max) * 100);
+    const cmHtml = t.cm ? `<a href="${t.cm}" target="_blank" class="rc-cm">↗</a>` : '';
+    html += `<div class="rc-row">
+      <div class="rc-year">${t.y}</div>
+      <div class="rc-bar-wrap">
+        <div class="rc-bar" style="width:${pct}%;background:${ratingBarColor(t.cmRating)};"></div>
+      </div>
+      <div class="rc-val" style="color:${ratingColor(t.cmRating)}">${t.cmRating.toFixed(2)}</div>
+      ${cmHtml}
+    </div>`;
+  });
+  document.getElementById('ratings-chart').innerHTML = html;
+}
+
+// Records table
+function buildRecords() {
+  const rows = [
+    ['Most G1 wins (official era)', 'Masahiro Chono — 5 wins (1991, 1992, 1994, 2002, 2005)'],
+    ['Most wins, modern era', 'Kazuchika Okada — 4 wins (2012, 2014, 2021, 2022)'],
+    ['Youngest G1 winner', 'Kazuchika Okada — 24 years, 9 months (2012)'],
+    ['Won on first G1 attempt', 'Masahiro Chono (1991), Hirooki Goto (2008), Kazuchika Okada (2012)'],
+    ['First non-Japanese winner', 'Kenny Omega (2016)'],
+    ['Second non-Japanese winner', 'Konosuke Takeshita (2025)'],
+    ['Most consecutive finals', 'Kota Ibushi — 4 in a row (2018, 2019, 2020, 2021)'],
+    ['Only perfect-record winner', 'Riki Choshu (1996) — undefeated in every match including finals bouts'],
+    ['Longest G1 final', 'Kota Ibushi vs SANADA — 35 min 12 sec (G1 Climax 30, 2020)'],
+    ['Largest G1 field', '2023 G1 Climax — 32 wrestlers across 4 blocks'],
+    ['First G1 outside Japan', 'G1 Climax 29 (2019) opened in Dallas, Texas'],
+    ['Briefcase stolen mid-year', 'Jay White def. Kota Ibushi at Power Struggle 2020 — only time ever'],
+    ['Shortest G1 match', 'Hirooki Goto vs Toru Yano — 18 seconds (G1 Climax 30, 2020)'],
+    ['Champion also won G1', 'Keiji Mutoh (1995) and Kensuke Sasaki (2000) — only two times'],
+    ['Champion defeated in a G1 final', 'Keiji Mutoh lost to Manabu Nakanishi (1999) — first ever'],
+    ['Highest-rated G1 match (Cagematch)', 'Hiroshi Tanahashi vs Kota Ibushi — Final 2018 (highest-rated G1 final)'],
+    ['Best-rated tournament (approx)', 'G1 Climax 27 (2017) — Omega vs Naito — widely rated the greatest ever'],
+    ['WK tradition broken', 'ZSJ (2024) cashed in at KOPW instead of Wrestle Kingdom — only time'],
+  ];
+  const el = document.getElementById('rec-table');
+  rows.forEach(([k, v]) => {
+    el.innerHTML += `<tr><td>${k}</td><td>${v}</td></tr>`;
+  });
+}
+
+buildLeaderboard();
+buildRatingsChart();
+buildRecords();
+showDec('all');
+</script>
+</body>
+</html>
