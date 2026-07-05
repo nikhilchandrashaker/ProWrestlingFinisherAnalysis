@@ -1,0 +1,9 @@
+MatchTypeBucket,n,mean,std,ci95
+Triple Threat,137,3.776,0.69,0.117
+Fatal 4-Way,99,3.773,0.577,0.115
+Singles,3995,3.757,0.795,0.025
+Elimination/Other,123,3.675,0.693,0.124
+Multi-Man (5+),100,3.662,0.858,0.17
+Tag Team (2v2),1013,3.561,0.769,0.047
+Multi-Man Tag (3v3+),802,3.499,0.734,0.051
+Handicap,16,2.125,1.285,0.684

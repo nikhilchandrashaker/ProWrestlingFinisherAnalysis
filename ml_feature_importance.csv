@@ -1,0 +1,7 @@
+feature,importance_mean,importance_std
+CageMatchRatingVotes,0.2718,0.0138
+Promotion,0.1156,0.0076
+Year,0.0188,0.0029
+EventType_ifUnambiguous,0.0131,0.0022
+MatchType,0.0062,0.0039
+NumCompetitors,0.002,0.0029

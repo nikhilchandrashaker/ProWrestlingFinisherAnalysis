@@ -1,0 +1,5 @@
+MatchType,n,mean,median,std,top5pct_rate,classics_4_5
+Singles,3995,3.757,3.75,0.795,8.611,20.25
+Multi-Man (singles-style),336,3.741,3.75,0.715,5.357,17.56
+Tag Team,1013,3.561,3.75,0.769,4.344,10.76
+Multi-Man Tag,802,3.499,3.5,0.734,3.616,11.222
